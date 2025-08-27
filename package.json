@@ -6,7 +6,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "concurrently --kill-others-on-fail --prefix name --names \"BACKEND,FRONTEND\" --prefix-colors \"yellow,cyan\" \"cd backend && npm run temp\" \"vite\"",
+    "dev": "concurrently --kill-others-on-fail --prefix name --names \"BACKEND,FRONTEND\" --prefix-colors \"yellow,cyan\" \"cd backend && npm start\" \"vite\"",
     "dev-db": "concurrently --kill-others-on-fail --prefix name --names \"BACKEND,FRONTEND\" --prefix-colors \"yellow,cyan\" \"cd backend && node server.js\" \"vite\"",
     "start": "node start.js",
     "frontend": "vite",
