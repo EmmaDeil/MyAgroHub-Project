@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const multer = require('multer');
 const { body, validationResult } = require('express-validator');
 const User = require('../models/User');
+const Farmer = require('../models/Farmer');
 const { protect } = require('../middleware/auth');
 
 const router = express.Router();
@@ -355,6 +356,111 @@ router.put('/change-password', protect, [
     res.status(500).json({
       success: false,
       message: 'Error changing password',
+      error: error.message
+    });
+  }
+});
+
+// @desc    Create farmer profile
+// @route   POST /api/auth/farmer-profile
+// @access  Private
+router.post('/farmer-profile', [
+  protect,
+  body('farmName')
+    .trim()
+    .notEmpty()
+    .withMessage('Farm name is required'),
+  body('location.city')
+    .trim()
+    .notEmpty()
+    .withMessage('City is required'),
+  body('location.state')
+    .trim()
+    .notEmpty()
+    .withMessage('State is required'),
+  body('specializations')
+    .isArray({ min: 1 })
+    .withMessage('At least one specialization is required')
+], async (req, res) => {
+  try {
+    // Check for validation errors
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: errors.array()
+      });
+    }
+
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    // Check if user already has a farmer profile
+    const existingFarmer = await Farmer.findOne({ user: user._id });
+    if (existingFarmer) {
+      return res.status(400).json({
+        success: false,
+        message: 'Farmer profile already exists'
+      });
+    }
+
+    const {
+      farmName,
+      location,
+      farmSize,
+      farmingExperience,
+      specializations,
+      bankDetails
+    } = req.body;
+
+    // Create farmer profile
+    const farmer = await Farmer.create({
+      user: user._id,
+      farmName,
+      location: {
+        ...location,
+        country: location.country || 'Nigeria'
+      },
+      farmSize,
+      farmingExperience,
+      specializations,
+      bankDetails,
+      isVerified: false, // Pending admin verification
+      isActive: true
+    });
+
+    // Update user role to farmer
+    user.role = 'farmer';
+    await user.save();
+
+    console.log(`🌱 New farmer profile created: ${farmName} by ${user.email}`);
+
+    res.status(201).json({
+      success: true,
+      message: 'Farmer profile created successfully. Pending admin verification.',
+      data: {
+        farmer: {
+          id: farmer._id,
+          farmName: farmer.farmName,
+          location: farmer.fullLocation,
+          specializations: farmer.specializations,
+          isVerified: farmer.isVerified,
+          isActive: farmer.isActive
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error('Farmer profile creation error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error creating farmer profile',
       error: error.message
     });
   }

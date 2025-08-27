@@ -567,6 +567,9 @@ export const adminAPI = {
   // Get farmers
   getFarmers: () => api.get('/admin/farmers'),
 
+  // Verify/Unverify farmer
+  verifyFarmer: (id, isVerified) => api.put(`/admin/farmers/${id}/verify`, { isVerified }),
+
   // Send SMS to farmer
   sendSms: (data) => api.post('/admin/sms/farmer', data)
 };

@@ -309,6 +309,42 @@ router.get('/farmers', async (req, res) => {
   }
 });
 
+// @desc    Verify/Unverify farmer
+// @route   PUT /api/admin/farmers/:id/verify
+// @access  Private/Admin
+router.put('/farmers/:id/verify', async (req, res) => {
+  try {
+    const { isVerified } = req.body;
+    
+    const farmer = await Farmer.findById(req.params.id).populate('user', 'name email');
+    
+    if (!farmer) {
+      return res.status(404).json({
+        success: false,
+        message: 'Farmer not found'
+      });
+    }
+
+    farmer.isVerified = isVerified;
+    await farmer.save();
+
+    console.log(`${isVerified ? '✅ Verified' : '❌ Unverified'} farmer: ${farmer.farmName} (${farmer.user?.email})`);
+
+    res.status(200).json({
+      success: true,
+      message: `Farmer ${isVerified ? 'verified' : 'unverified'} successfully`,
+      data: farmer
+    });
+  } catch (error) {
+    console.error('Farmer verification error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error updating farmer verification',
+      error: error.message
+    });
+  }
+});
+
 // @desc    Send SMS to farmer
 // @route   POST /api/admin/sms/farmer
 // @access  Private/Admin

@@ -38,11 +38,41 @@ const AdminDashboard = ({ user, onLogout, onNavigate }) => {
   ];
 
   useEffect(() => {
-    setFarmers(farmersData);
     loadOrders();
+    loadFarmers();
     loadSmsConfig();
     updateDashboardStats();
   }, []);
+
+  const loadFarmers = async () => {
+    try {
+      const response = await adminAPI.getFarmers();
+      setFarmers(response.data || []);
+      console.log('✅ Farmers loaded successfully:', response.data?.length || 0, 'farmers');
+    } catch (error) {
+      console.error('❌ Error loading farmers:', error);
+      console.error('Error details:', {
+        message: error.message,
+        status: error.response?.status,
+        data: error.response?.data,
+        token: localStorage.getItem('agrohub_token') ? 'Present' : 'Missing'
+      });
+      
+      let errorMessage = 'Error loading farmers data';
+      if (error.response?.status === 401) {
+        errorMessage = 'Authentication required. Please log in again.';
+      } else if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      }
+      
+      showAlert(errorMessage, 'warning');
+      
+      // If authentication error, might need to redirect to login
+      if (error.response?.status === 401) {
+        console.warn('🔐 Authentication failed - user may need to log in again');
+      }
+    }
+  };
 
   const updateDashboardStats = () => {
     setDashboardStats(prev => ({
@@ -159,6 +189,17 @@ Please prepare for delivery. Thank you!`;
       localStorage.setItem('agritech_orders', JSON.stringify(updatedOrders));
       showAlert(`Order status updated to ${newStatus} (offline mode)`, 'warning');
       setShowOrderModal(false);
+    }
+  };
+
+  const handleFarmerVerification = async (farmerId, isVerified) => {
+    try {
+      await adminAPI.verifyFarmer(farmerId, isVerified);
+      await loadFarmers(); // Refresh farmers list
+      showAlert(`Farmer ${isVerified ? 'verified' : 'unverified'} successfully`, 'success');
+    } catch (error) {
+      console.error('Error updating farmer verification:', error);
+      showAlert('Error updating farmer verification status', 'danger');
     }
   };
 
@@ -449,36 +490,85 @@ Please prepare for delivery. Thank you!`;
 
           {/* Farmers List */}
           <Card className="border-0 shadow-sm mt-4">
-            <Card.Header className="bg-success text-white">
+            <Card.Header className="bg-success text-white d-flex justify-content-between align-items-center">
               <h5 className="mb-0">👨‍🌾 Registered Farmers</h5>
+              <Button variant="light" size="sm" onClick={loadFarmers}>
+                <i className="fas fa-sync-alt me-1"></i>
+                Refresh
+              </Button>
             </Card.Header>
             <Card.Body>
-              <Row>
-                {farmers.map((farmer) => (
-                  <Col md={6} lg={4} key={farmer.id} className="mb-3">
-                    <Card className="h-100 border">
-                      <Card.Body>
-                        <h6 className="text-success">{farmer.name}</h6>
-                        <p className="small text-muted mb-2">
-                          <i className="fas fa-map-marker-alt me-1"></i>
-                          {farmer.location}
-                        </p>
-                        <p className="small text-muted mb-2">
-                          <i className="fas fa-phone me-1"></i>
-                          {farmer.phone}
-                        </p>
-                        <div className="d-flex flex-wrap gap-1">
-                          {farmer.products.map((product, idx) => (
-                            <Badge key={idx} bg="light" text="dark" className="small">
-                              {product}
+              {farmers.length === 0 ? (
+                <div className="text-center text-muted py-5">
+                  <i className="fas fa-users fa-3x mb-3"></i>
+                  <p>No farmers registered yet</p>
+                  <small className="text-info">
+                    If you're seeing authentication errors, make sure you're logged in as admin with eclefzy@gmail.com
+                  </small>
+                </div>
+              ) : (
+                <Row>
+                  {farmers.map((farmer) => (
+                    <Col md={6} lg={4} key={farmer._id} className="mb-3">
+                      <Card className={`h-100 border ${!farmer.isVerified ? 'border-warning' : 'border-success'}`}>
+                        <Card.Body>
+                          <div className="d-flex justify-content-between align-items-start mb-2">
+                            <h6 className="text-success">{farmer.farmName}</h6>
+                            <Badge bg={farmer.isVerified ? 'success' : 'warning'}>
+                              {farmer.isVerified ? '✅ Verified' : '⏳ Pending'}
                             </Badge>
-                          ))}
-                        </div>
-                      </Card.Body>
-                    </Card>
-                  </Col>
-                ))}
-              </Row>
+                          </div>
+                          <p className="small text-muted mb-2">
+                            <i className="fas fa-user me-1"></i>
+                            {farmer.user?.name || 'Unknown'}
+                          </p>
+                          <p className="small text-muted mb-2">
+                            <i className="fas fa-envelope me-1"></i>
+                            {farmer.user?.email || 'No email'}
+                          </p>
+                          <p className="small text-muted mb-2">
+                            <i className="fas fa-phone me-1"></i>
+                            {farmer.user?.phone || 'No phone'}
+                          </p>
+                          <p className="small text-muted mb-2">
+                            <i className="fas fa-map-marker-alt me-1"></i>
+                            {farmer.location?.city}, {farmer.location?.state}
+                          </p>
+                          <div className="d-flex flex-wrap gap-1 mb-2">
+                            {farmer.specializations?.map((spec, idx) => (
+                              <Badge key={idx} bg="light" text="dark" className="small">
+                                {spec}
+                              </Badge>
+                            ))}
+                          </div>
+                          {!farmer.isVerified && (
+                            <div className="d-grid gap-1">
+                              <Button 
+                                variant="success" 
+                                size="sm"
+                                onClick={() => handleFarmerVerification(farmer._id, true)}
+                              >
+                                ✅ Verify Farmer
+                              </Button>
+                            </div>
+                          )}
+                          {farmer.isVerified && (
+                            <div className="d-grid gap-1">
+                              <Button 
+                                variant="outline-warning" 
+                                size="sm"
+                                onClick={() => handleFarmerVerification(farmer._id, false)}
+                              >
+                                ❌ Unverify
+                              </Button>
+                            </div>
+                          )}
+                        </Card.Body>
+                      </Card>
+                    </Col>
+                  ))}
+                </Row>
+              )}
             </Card.Body>
           </Card>
         </div>

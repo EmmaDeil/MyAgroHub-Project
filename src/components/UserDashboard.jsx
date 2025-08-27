@@ -161,7 +161,7 @@ const UserDashboard = ({ user, onLogout, cartItems, getTotalItems, getTotalPrice
 
           {/* Quick Actions */}
           <Row className="mb-5">
-            <Col md={4}>
+            <Col md={3}>
               <Card className="border-0 shadow-sm bg-success text-white h-100">
                 <Card.Body className="text-center">
                   <div style={{ fontSize: '3rem' }} className="mb-3">🛍️</div>
@@ -176,7 +176,7 @@ const UserDashboard = ({ user, onLogout, cartItems, getTotalItems, getTotalPrice
                 </Card.Body>
               </Card>
             </Col>
-            <Col md={4}>
+            <Col md={3}>
               <Card className="border-0 shadow-sm bg-info text-white h-100">
                 <Card.Body className="text-center">
                   <div style={{ fontSize: '3rem' }} className="mb-3">📋</div>
@@ -191,7 +191,7 @@ const UserDashboard = ({ user, onLogout, cartItems, getTotalItems, getTotalPrice
                 </Card.Body>
               </Card>
             </Col>
-            <Col md={4}>
+            <Col md={3}>
               <Card className="border-0 shadow-sm bg-warning text-white h-100">
                 <Card.Body className="text-center">
                   <div style={{ fontSize: '3rem' }} className="mb-3">🛒</div>
@@ -202,6 +202,23 @@ const UserDashboard = ({ user, onLogout, cartItems, getTotalItems, getTotalPrice
                     onClick={() => setCurrentPage('cart')}
                   >
                     View Cart ({getTotalItems()})
+                  </Button>
+                </Card.Body>
+              </Card>
+            </Col>
+            <Col md={3}>
+              <Card className="border-0 shadow-sm bg-primary text-white h-100">
+                <Card.Body className="text-center">
+                  <div style={{ fontSize: '3rem' }} className="mb-3">🌱</div>
+                  <h5>Become a Farmer</h5>
+                  <p className="mb-3">Join our marketplace and sell your farm products</p>
+                  <Button 
+                    variant="outline-light"
+                    onClick={() => {
+                      alert('Coming Soon! Farmer registration will be available in the next update. For now, contact admin@agrohub.com to become a verified farmer.');
+                    }}
+                  >
+                    Join As Farmer
                   </Button>
                 </Card.Body>
               </Card>
