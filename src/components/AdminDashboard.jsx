@@ -477,8 +477,12 @@ Please prepare for delivery. Thank you!`;
                   <div className="alert alert-warning py-2 mb-2">
                     <small><strong>Low Stock:</strong> Fresh Tomatoes (5 kg left)</small>
                   </div>
-                  <div className="alert alert-info py-2 mb-2">
-                    <small><strong>New Farmer:</strong> Pending verification (2)</small>
+                  <div 
+                    className="alert alert-info py-2 mb-2 cursor-pointer" 
+                    style={{ cursor: 'pointer' }}
+                    onClick={() => onNavigate('admin-users')}
+                  >
+                    <small><strong>New Farmer:</strong> Pending verification (2) <i className="fas fa-arrow-right ms-2"></i></small>
                   </div>
                   <div className="alert alert-success py-2 mb-0">
                     <small><strong>Orders:</strong> {orders.filter(o => o.status === 'Pending').length} pending review</small>

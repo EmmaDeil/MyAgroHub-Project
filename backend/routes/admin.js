@@ -309,12 +309,12 @@ router.get('/farmers', async (req, res) => {
   }
 });
 
-// @desc    Verify/Unverify farmer
+// @desc    Verify/Reject farmer with detailed feedback
 // @route   PUT /api/admin/farmers/:id/verify
 // @access  Private/Admin
 router.put('/farmers/:id/verify', async (req, res) => {
   try {
-    const { isVerified } = req.body;
+    const { isVerified, rejectionReason, requiredDocuments, adminNotes } = req.body;
     
     const farmer = await Farmer.findById(req.params.id).populate('user', 'name email');
     
@@ -325,14 +325,58 @@ router.put('/farmers/:id/verify', async (req, res) => {
       });
     }
 
+    // Update farmer verification status
     farmer.isVerified = isVerified;
+    farmer.verificationDate = isVerified ? new Date() : null;
+    
+    // If rejected, store rejection details
+    if (!isVerified) {
+      farmer.rejectionDetails = {
+        reason: rejectionReason || 'General rejection',
+        requiredDocuments: requiredDocuments || [],
+        adminNotes: adminNotes || '',
+        rejectedAt: new Date(),
+        rejectedBy: req.user._id
+      };
+    } else {
+      // Clear rejection details if approved
+      farmer.rejectionDetails = undefined;
+    }
+    
     await farmer.save();
 
-    console.log(`${isVerified ? '✅ Verified' : '❌ Unverified'} farmer: ${farmer.farmName} (${farmer.user?.email})`);
+    // Send email notification
+    try {
+      const emailService = require('../services/emailService');
+      
+      if (isVerified) {
+        await emailService.sendFarmerApprovalEmail(farmer.user.email, {
+          farmerName: farmer.user.name,
+          farmName: farmer.farmName,
+          approvalDate: new Date().toLocaleDateString()
+        });
+        console.log(`✅ Approval email sent to: ${farmer.user.email}`);
+      } else {
+        await emailService.sendFarmerRejectionEmail(farmer.user.email, {
+          farmerName: farmer.user.name,
+          farmName: farmer.farmName,
+          rejectionReason: rejectionReason || 'General rejection',
+          requiredDocuments: requiredDocuments || [],
+          adminNotes: adminNotes || '',
+          rejectionDate: new Date().toLocaleDateString()
+        });
+        console.log(`📧 Rejection email sent to: ${farmer.user.email}`);
+      }
+    } catch (emailError) {
+      console.error('Email sending error:', emailError);
+      // Don't fail the verification process if email fails
+    }
+
+    console.log(`${isVerified ? '✅ Verified' : '❌ Rejected'} farmer: ${farmer.farmName} (${farmer.user?.email})`);
 
     res.status(200).json({
       success: true,
-      message: `Farmer ${isVerified ? 'verified' : 'unverified'} successfully`,
+      message: `Farmer ${isVerified ? 'verified' : 'rejected'} successfully`,
       data: farmer
     });
   } catch (error) {

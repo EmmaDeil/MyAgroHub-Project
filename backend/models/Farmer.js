@@ -60,6 +60,41 @@ const farmerSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  verificationDate: {
+    type: Date
+  },
+  rejectionDetails: {
+    reason: {
+      type: String,
+      enum: [
+        'Incomplete Documents',
+        'Invalid Documents',
+        'Insufficient Farm Information',
+        'Location Verification Failed',
+        'Bank Details Invalid',
+        'General Requirements Not Met',
+        'Other'
+      ]
+    },
+    requiredDocuments: [{
+      type: String,
+      enum: [
+        'Government-issued ID',
+        'Farm Certificate/Land Documents',
+        'Bank Account Verification',
+        'Agricultural License',
+        'Tax Identification Number',
+        'Farm Photos',
+        'Other'
+      ]
+    }],
+    adminNotes: String,
+    rejectedAt: Date,
+    rejectedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    }
+  },
   verificationDocuments: [{
     type: String,
     documentType: String,

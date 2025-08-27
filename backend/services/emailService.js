@@ -204,8 +204,233 @@ const sendFarmerNotification = async (farmerEmail, orderDetails) => {
   }
 };
 
+// Send farmer approval email
+const sendFarmerApprovalEmail = async (farmerEmail, details) => {
+  try {
+    const transporter = createTransporter();
+    
+    const mailOptions = {
+      from: process.env.FROM_EMAIL || '"AgroHub Team" <noreply@agrohub.com>',
+      to: farmerEmail,
+      subject: '🎉 Your Farmer Application has been Approved!',
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Farmer Application Approved - AgroHub</title>
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; background-color: #f8f9fa; }
+            .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
+            .header { background: #28a745; color: white; padding: 30px; text-align: center; }
+            .header h1 { margin: 0; font-size: 28px; }
+            .content { padding: 30px; }
+            .success-box { background: #d4edda; border: 1px solid #c3e6cb; color: #155724; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center; }
+            .info-box { background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; }
+            .footer { background: #f8f9fa; padding: 20px; text-align: center; color: #666; }
+            .green { color: #28a745; font-weight: bold; }
+            .btn { background: #28a745; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 10px 0; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>🌾 AgroHub</h1>
+              <p>Farmer Application Status</p>
+            </div>
+            
+            <div class="content">
+              <div class="success-box">
+                <h2>🎉 Congratulations!</h2>
+                <p><strong>Your farmer application has been approved!</strong></p>
+              </div>
+              
+              <p>Dear <strong>${details.farmerName}</strong>,</p>
+              
+              <p>We are excited to inform you that your application to join AgroHub as a verified farmer has been <span class="green">approved</span>!</p>
+              
+              <div class="info-box">
+                <h3>📋 Application Details:</h3>
+                <ul>
+                  <li><strong>Farm Name:</strong> ${details.farmName}</li>
+                  <li><strong>Approval Date:</strong> ${details.approvalDate}</li>
+                  <li><strong>Status:</strong> <span class="green">✅ Verified Farmer</span></li>
+                </ul>
+              </div>
+              
+              <h3>🚀 What's Next?</h3>
+              <ul>
+                <li><strong>Start Selling:</strong> You can now list your products on our platform</li>
+                <li><strong>Receive Orders:</strong> Customers can now purchase directly from your farm</li>
+                <li><strong>Manage Inventory:</strong> Use your farmer dashboard to manage products and orders</li>
+                <li><strong>Get Payments:</strong> Receive payments directly to your registered bank account</li>
+              </ul>
+              
+              <div style="text-align: center; margin: 30px 0;">
+                <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/agrohub/" class="btn">
+                  🌾 Access Your Farmer Dashboard
+                </a>
+              </div>
+              
+              <p>If you have any questions or need assistance, please don't hesitate to contact our support team.</p>
+              
+              <p>Welcome to the AgroHub family! We look forward to helping you connect with customers and grow your business.</p>
+              
+              <p>Best regards,<br><strong>The AgroHub Team</strong></p>
+            </div>
+            
+            <div class="footer">
+              <p>This is an automated message. Please do not reply to this email.</p>
+              <p>© 2024 AgroHub. All rights reserved.</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+    console.log('✅ Farmer approval email sent:', info.messageId);
+    
+    return {
+      success: true,
+      messageId: info.messageId
+    };
+  } catch (error) {
+    console.error('❌ Failed to send farmer approval email:', error);
+    throw error;
+  }
+};
+
+// Send farmer rejection email
+const sendFarmerRejectionEmail = async (farmerEmail, details) => {
+  try {
+    const transporter = createTransporter();
+    
+    const documentsList = details.requiredDocuments && details.requiredDocuments.length > 0 
+      ? details.requiredDocuments.map(doc => `<li>${doc}</li>`).join('')
+      : '<li>No specific documents mentioned</li>';
+    
+    const mailOptions = {
+      from: process.env.FROM_EMAIL || '"AgroHub Team" <noreply@agrohub.com>',
+      to: farmerEmail,
+      subject: '📋 Your Farmer Application Requires Additional Information',
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Farmer Application Update - AgroHub</title>
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; background-color: #f8f9fa; }
+            .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
+            .header { background: #ffc107; color: #212529; padding: 30px; text-align: center; }
+            .header h1 { margin: 0; font-size: 28px; }
+            .content { padding: 30px; }
+            .warning-box { background: #fff3cd; border: 1px solid #ffeaa7; color: #856404; padding: 20px; border-radius: 8px; margin: 20px 0; }
+            .info-box { background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; }
+            .documents-box { background: #e3f2fd; border: 1px solid #bbdefb; padding: 20px; border-radius: 8px; margin: 20px 0; }
+            .footer { background: #f8f9fa; padding: 20px; text-align: center; color: #666; }
+            .orange { color: #fd7e14; font-weight: bold; }
+            .btn { background: #ffc107; color: #212529; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 10px 0; font-weight: bold; }
+            ul li { margin-bottom: 8px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>🌾 AgroHub</h1>
+              <p>Farmer Application Update</p>
+            </div>
+            
+            <div class="content">
+              <div class="warning-box">
+                <h2>📋 Additional Information Required</h2>
+                <p><strong>Your farmer application needs some additional information before approval.</strong></p>
+              </div>
+              
+              <p>Dear <strong>${details.farmerName}</strong>,</p>
+              
+              <p>Thank you for your interest in joining AgroHub as a verified farmer. We have reviewed your application for <strong>${details.farmName}</strong>, and we need some additional information before we can complete the verification process.</p>
+              
+              <div class="info-box">
+                <h3>📋 Application Details:</h3>
+                <ul>
+                  <li><strong>Farm Name:</strong> ${details.farmName}</li>
+                  <li><strong>Review Date:</strong> ${details.rejectionDate}</li>
+                  <li><strong>Status:</strong> <span class="orange">⏳ Pending Additional Information</span></li>
+                </ul>
+              </div>
+              
+              <h3>🔍 Reason for Request:</h3>
+              <div class="info-box">
+                <p><strong>${details.rejectionReason}</strong></p>
+                ${details.adminNotes ? `<p><em>Additional Notes:</em> ${details.adminNotes}</p>` : ''}
+              </div>
+              
+              ${details.requiredDocuments && details.requiredDocuments.length > 0 ? `
+              <div class="documents-box">
+                <h3>📄 Required Documents:</h3>
+                <p>Please upload or resubmit the following documents:</p>
+                <ul>
+                  ${documentsList}
+                </ul>
+              </div>
+              ` : ''}
+              
+              <h3>🚀 What's Next?</h3>
+              <ol>
+                <li><strong>Review the feedback above</strong></li>
+                <li><strong>Prepare the required documents</strong> (if applicable)</li>
+                <li><strong>Log into your account</strong> and update your farmer profile</li>
+                <li><strong>Resubmit your application</strong> with the additional information</li>
+              </ol>
+              
+              <div style="text-align: center; margin: 30px 0;">
+                <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/agrohub/" class="btn">
+                  📝 Update Your Application
+                </a>
+              </div>
+              
+              <p><strong>Don't worry!</strong> This is a normal part of our verification process to ensure all farmers meet our quality standards. Once you provide the additional information, we'll review your application again promptly.</p>
+              
+              <p>If you have any questions about the requirements or need assistance, please contact our support team. We're here to help!</p>
+              
+              <p>Thank you for your patience and commitment to joining AgroHub.</p>
+              
+              <p>Best regards,<br><strong>The AgroHub Verification Team</strong></p>
+            </div>
+            
+            <div class="footer">
+              <p>This is an automated message. Please do not reply to this email.</p>
+              <p>For support, contact us through your AgroHub dashboard.</p>
+              <p>© 2024 AgroHub. All rights reserved.</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+    console.log('✅ Farmer rejection email sent:', info.messageId);
+    
+    return {
+      success: true,
+      messageId: info.messageId
+    };
+  } catch (error) {
+    console.error('❌ Failed to send farmer rejection email:', error);
+    throw error;
+  }
+};
+
 module.exports = {
   sendOrderConfirmation,
   sendFarmerNotification,
+  sendFarmerApprovalEmail,
+  sendFarmerRejectionEmail,
   createTransporter
 };

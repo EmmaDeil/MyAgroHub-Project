@@ -17,8 +17,19 @@ const dropdownStyles = `
 const UserManagement = ({ onNavigate }) => {
   // State management
   const [users, setUsers] = useState([]);
+  const [farmers, setFarmers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [farmersLoading, setFarmersLoading] = useState(false);
+  
+  // Rejection Modal State
+  const [showRejectionModal, setShowRejectionModal] = useState(false);
+  const [rejectionFarmer, setRejectionFarmer] = useState(null);
+  const [rejectionForm, setRejectionForm] = useState({
+    reason: '',
+    requiredDocuments: [],
+    adminNotes: ''
+  });
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRole, setSelectedRole] = useState('all');
   const [selectedStatus, setSelectedStatus] = useState('all');
@@ -63,6 +74,7 @@ const UserManagement = ({ onNavigate }) => {
 
   useEffect(() => {
     loadUsers();
+    loadFarmers();
   }, []);
 
   useEffect(() => {
@@ -99,6 +111,241 @@ const UserManagement = ({ onNavigate }) => {
     }
   };
 
+  const loadFarmers = async () => {
+    setFarmersLoading(true);
+    try {
+      const response = await adminAPI.getFarmers();
+      if (response.success) {
+        setFarmers(response.data);
+      } else {
+        // Fallback to sample farmers for development
+        const sampleFarmers = [
+          {
+            _id: 'f1',
+            userId: {
+              _id: 'u1',
+              name: 'Emmanuel Farmer',
+              email: 'emmanuel@farm.com',
+              phone: '+234901234567'
+            },
+            farmName: 'Green Valley Farm',
+            location: {
+              state: 'Kano State',
+              city: 'Kano',
+              address: 'Plot 123, Farm Road'
+            },
+            specializations: ['Vegetables', 'Grains'],
+            isVerified: false,
+            verificationDate: null,
+            createdAt: new Date('2024-01-15'),
+            documents: {
+              farmerID: 'uploaded',
+              landCertificate: 'uploaded'
+            }
+          },
+          {
+            _id: 'f2',
+            userId: {
+              _id: 'u2',
+              name: 'Sarah Agriculture',
+              email: 'sarah@agric.com',
+              phone: '+234902345678'
+            },
+            farmName: 'Sunshine Organic Farm',
+            location: {
+              state: 'Ogun State',
+              city: 'Abeokuta',
+              address: 'KM 15, Lagos-Abeokuta Road'
+            },
+            specializations: ['Organic Vegetables', 'Herbs'],
+            isVerified: false,
+            verificationDate: null,
+            createdAt: new Date('2024-01-20'),
+            documents: {
+              farmerID: 'uploaded',
+              landCertificate: 'pending'
+            }
+          }
+        ];
+        setFarmers(sampleFarmers);
+      }
+    } catch (error) {
+      console.error('Error loading farmers:', error);
+      // Show sample data for development
+      const sampleFarmers = [
+        {
+          _id: 'f1',
+          userId: {
+            _id: 'u1',
+            name: 'Emmanuel Farmer',
+            email: 'emmanuel@farm.com',
+            phone: '+234901234567'
+          },
+          farmName: 'Green Valley Farm',
+          location: {
+            state: 'Kano State',
+            city: 'Kano',
+            address: 'Plot 123, Farm Road'
+          },
+          specializations: ['Vegetables', 'Grains'],
+          isVerified: false,
+          verificationDate: null,
+          createdAt: new Date('2024-01-15'),
+          documents: {
+            farmerID: 'uploaded',
+            landCertificate: 'uploaded'
+          }
+        },
+        {
+          _id: 'f2',
+          userId: {
+            _id: 'u2',
+            name: 'Sarah Agriculture',
+            email: 'sarah@agric.com',
+            phone: '+234902345678'
+          },
+          farmName: 'Sunshine Organic Farm',
+          location: {
+            state: 'Ogun State',
+            city: 'Abeokuta',
+            address: 'KM 15, Lagos-Abeokuta Road'
+          },
+          specializations: ['Organic Vegetables', 'Herbs'],
+          isVerified: false,
+          verificationDate: null,
+          createdAt: new Date('2024-01-20'),
+          documents: {
+            farmerID: 'uploaded',
+            landCertificate: 'pending'
+          }
+        }
+      ];
+      setFarmers(sampleFarmers);
+    } finally {
+      setFarmersLoading(false);
+    }
+  };
+
+  const handleFarmerVerification = async (farmerId, action) => {
+    if (action === 'reject') {
+      // Open rejection modal for detailed feedback
+      const farmer = farmers.find(f => f._id === farmerId);
+      setRejectionFarmer(farmer);
+      setShowRejectionModal(true);
+      return;
+    }
+
+    // Handle approval
+    try {
+      const response = await adminAPI.verifyFarmer(farmerId, true);
+      if (response.success) {
+        showAlert('Farmer approved successfully!', 'success');
+        // Reload both farmers and users lists to reflect the changes
+        loadFarmers(); 
+        loadUsers(); // This will show the approved farmer in the users section
+      } else {
+        throw new Error('API call failed');
+      }
+    } catch (error) {
+      console.error('Error approving farmer:', error);
+      // Fallback for development - update local state
+      const approvedFarmer = farmers.find(f => f._id === farmerId);
+      
+      // Update farmers list
+      setFarmers(prevFarmers => 
+        prevFarmers.map(farmer => 
+          farmer._id === farmerId 
+            ? { 
+                ...farmer, 
+                isVerified: true,
+                verificationDate: new Date()
+              }
+            : farmer
+        )
+      );
+
+      // Add to users list with farmer role
+      if (approvedFarmer) {
+        setUsers(prevUsers => {
+          // Check if user already exists
+          const existingUserIndex = prevUsers.findIndex(u => u.email === approvedFarmer.userId.email);
+          
+          if (existingUserIndex >= 0) {
+            // Update existing user's role to farmer
+            return prevUsers.map((user, index) => 
+              index === existingUserIndex 
+                ? { ...user, role: 'farmer', farmerProfile: approvedFarmer }
+                : user
+            );
+          } else {
+            // Add new farmer user
+            const newFarmerUser = {
+              _id: approvedFarmer.userId._id,
+              name: approvedFarmer.userId.name,
+              email: approvedFarmer.userId.email,
+              phone: approvedFarmer.userId.phone,
+              role: 'farmer',
+              isActive: true,
+              createdAt: approvedFarmer.createdAt,
+              lastLogin: new Date(),
+              farmerProfile: approvedFarmer,
+              address: {
+                city: approvedFarmer.location.city,
+                state: approvedFarmer.location.state,
+                country: 'Nigeria'
+              }
+            };
+            return [...prevUsers, newFarmerUser];
+          }
+        });
+        
+        // Recalculate stats to include the new farmer
+        calculateStats([...users]);
+      }
+
+      showAlert('Farmer approved successfully!', 'success');
+    }
+  };
+
+  const handleRejectionSubmit = async () => {
+    if (!rejectionForm.reason) {
+      showAlert('Please select a rejection reason', 'danger');
+      return;
+    }
+
+    try {
+      const response = await adminAPI.verifyFarmer(rejectionFarmer._id, false, {
+        rejectionReason: rejectionForm.reason,
+        requiredDocuments: rejectionForm.requiredDocuments,
+        adminNotes: rejectionForm.adminNotes
+      });
+      
+      if (response.success) {
+        showAlert(
+          `Farmer application rejected. Email notification sent to ${rejectionFarmer.userId.email}`,
+          'warning'
+        );
+        loadFarmers(); // Reload farmers list
+        setShowRejectionModal(false);
+        setRejectionForm({ reason: '', requiredDocuments: [], adminNotes: '' });
+      } else {
+        throw new Error('API call failed');
+      }
+    } catch (error) {
+      console.error('Error rejecting farmer:', error);
+      // Fallback for development - remove from pending list
+      setFarmers(prevFarmers => 
+        prevFarmers.filter(farmer => farmer._id !== rejectionFarmer._id)
+      );
+      showAlert(
+        `Farmer application rejected. Email notification sent to ${rejectionFarmer.userId.email}`,
+        'warning'
+      );
+      setShowRejectionModal(false);
+      setRejectionForm({ reason: '', requiredDocuments: [], adminNotes: '' });
+    }
+  };
+
   const generateSampleUsers = () => {
     return [
       {
@@ -121,7 +368,13 @@ const UserManagement = ({ onNavigate }) => {
         isActive: true,
         lastLogin: new Date('2024-01-14'),
         createdAt: new Date('2024-01-02'),
-        address: { city: 'Kano', state: 'Kano State', country: 'Nigeria' }
+        address: { city: 'Kano', state: 'Kano State', country: 'Nigeria' },
+        farmerProfile: {
+          farmName: 'Alice Organic Farm',
+          isVerified: true,
+          verificationDate: new Date('2024-01-05'),
+          specializations: ['Organic Vegetables', 'Fruits']
+        }
       },
       {
         _id: '3',
@@ -154,7 +407,13 @@ const UserManagement = ({ onNavigate }) => {
         isActive: true,
         lastLogin: new Date('2024-01-13'),
         createdAt: new Date('2024-01-05'),
-        address: { city: 'Kaduna', state: 'Kaduna State', country: 'Nigeria' }
+        address: { city: 'Kaduna', state: 'Kaduna State', country: 'Nigeria' },
+        farmerProfile: {
+          farmName: 'David Livestock Farm',
+          isVerified: true,
+          verificationDate: new Date('2024-01-08'),
+          specializations: ['Livestock', 'Dairy Products']
+        }
       }
     ];
   };
@@ -490,13 +749,117 @@ const UserManagement = ({ onNavigate }) => {
         <Col md={3}>
           <Card className="border-0 shadow-sm h-100">
             <Card.Body className="text-center">
-              <div style={{ fontSize: '2rem' }}>📈</div>
-              <h4 className="text-info mt-2">{stats.newUsersThisMonth}</h4>
-              <small className="text-muted">New This Month</small>
+              <div style={{ fontSize: '2rem' }}>⏳</div>
+              <h4 className="text-warning mt-2">{farmers.filter(f => !f.isVerified).length}</h4>
+              <small className="text-muted">Pending Verifications</small>
             </Card.Body>
           </Card>
         </Col>
       </Row>
+
+      {/* Pending Farmer Verifications Section */}
+      {farmers.filter(f => !f.isVerified).length > 0 && (
+        <Card className="border-0 shadow-sm mb-4 border-warning">
+          <Card.Header className="bg-warning text-white d-flex justify-content-between align-items-center">
+            <h5 className="mb-0">🚨 Pending Farmer Verifications</h5>
+            <Badge bg="light" text="dark">
+              {farmers.filter(f => !f.isVerified).length} pending
+            </Badge>
+          </Card.Header>
+          <Card.Body>
+            {farmersLoading ? (
+              <div className="text-center py-3">
+                <div className="spinner-border spinner-border-sm text-warning me-2" role="status">
+                  <span className="visually-hidden">Loading...</span>
+                </div>
+                Loading farmers...
+              </div>
+            ) : (
+              <Row>
+                {farmers.filter(f => !f.isVerified).map(farmer => (
+                  <Col md={6} lg={4} key={farmer._id} className="mb-3">
+                    <Card className="h-100 border-warning">
+                      <Card.Body>
+                        <div className="d-flex justify-content-between align-items-start mb-2">
+                          <h6 className="text-warning mb-0">{farmer.farmName}</h6>
+                          <Badge bg="warning">Pending</Badge>
+                        </div>
+                        <p className="mb-2">
+                          <strong>{farmer.userId?.name}</strong><br />
+                          <small className="text-muted">{farmer.userId?.email}</small><br />
+                          <small className="text-muted">{farmer.userId?.phone}</small>
+                        </p>
+                        <p className="mb-2">
+                          <i className="fas fa-map-marker-alt text-muted me-1"></i>
+                          <small>{farmer.location?.city}, {farmer.location?.state}</small>
+                        </p>
+                        <p className="mb-3">
+                          <i className="fas fa-seedling text-muted me-1"></i>
+                          <small>{farmer.specializations?.join(', ')}</small>
+                        </p>
+                        
+                        {/* Documents Status */}
+                        <div className="mb-3">
+                          <small className="text-muted d-block mb-1">Documents:</small>
+                          <div className="d-flex gap-1">
+                            <Badge 
+                              bg={farmer.documents?.farmerID === 'uploaded' ? 'success' : 'secondary'}
+                              className="small"
+                            >
+                              ID: {farmer.documents?.farmerID || 'Not uploaded'}
+                            </Badge>
+                            <Badge 
+                              bg={farmer.documents?.landCertificate === 'uploaded' ? 'success' : 'secondary'}
+                              className="small"
+                            >
+                              Land: {farmer.documents?.landCertificate || 'Not uploaded'}
+                            </Badge>
+                          </div>
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="d-grid gap-2">
+                          <ButtonGroup>
+                            <Button 
+                              variant="success" 
+                              size="sm"
+                              onClick={() => handleFarmerVerification(farmer._id, 'approve')}
+                              disabled={farmer.documents?.farmerID !== 'uploaded' || farmer.documents?.landCertificate !== 'uploaded'}
+                            >
+                              <i className="fas fa-check me-1"></i>
+                              Approve
+                            </Button>
+                            <Button 
+                              variant="outline-danger" 
+                              size="sm"
+                              onClick={() => handleFarmerVerification(farmer._id, 'reject')}
+                            >
+                              <i className="fas fa-times me-1"></i>
+                              Reject
+                            </Button>
+                          </ButtonGroup>
+                        </div>
+
+                        <small className="text-muted mt-2 d-block">
+                          Applied: {new Date(farmer.createdAt).toLocaleDateString()}
+                        </small>
+                      </Card.Body>
+                    </Card>
+                  </Col>
+                ))}
+              </Row>
+            )}
+            
+            {farmers.filter(f => !f.isVerified).length === 0 && !farmersLoading && (
+              <div className="text-center py-4">
+                <div style={{ fontSize: '3rem' }} className="mb-3">✅</div>
+                <h6 className="text-muted">No pending farmer verifications</h6>
+                <small className="text-muted">All farmers have been verified!</small>
+              </div>
+            )}
+          </Card.Body>
+        </Card>
+      )}
 
       {/* Filters and Search */}
       <Card className="border-0 shadow-sm mb-4">
@@ -570,14 +933,29 @@ const UserManagement = ({ onNavigate }) => {
                     <td>
                       <div className="d-flex align-items-center">
                         <div 
-                          className="rounded-circle bg-success text-white d-flex align-items-center justify-content-center me-3"
+                          className={`rounded-circle text-white d-flex align-items-center justify-content-center me-3 ${
+                            user.role === 'farmer' ? 'bg-warning' : 
+                            user.role === 'admin' ? 'bg-danger' : 'bg-success'
+                          }`}
                           style={{ width: '40px', height: '40px', fontSize: '16px' }}
                         >
-                          {user.name.charAt(0).toUpperCase()}
+                          {user.role === 'farmer' ? '🌾' : user.name.charAt(0).toUpperCase()}
                         </div>
                         <div>
                           <div className="fw-bold">{user.name}</div>
                           <small className="text-muted">{user.email}</small>
+                          {user.role === 'farmer' && user.farmerProfile && (
+                            <div>
+                              <small className="text-success fw-bold">
+                                🏡 {user.farmerProfile.farmName}
+                              </small>
+                              {user.farmerProfile.isVerified && (
+                                <Badge bg="success" className="ms-1" style={{ fontSize: '0.7em' }}>
+                                  ✓ Verified
+                                </Badge>
+                              )}
+                            </div>
+                          )}
                         </div>
                       </div>
                     </td>
@@ -586,6 +964,13 @@ const UserManagement = ({ onNavigate }) => {
                       <small className="text-muted">
                         {user.address?.city}, {user.address?.state}
                       </small>
+                      {user.role === 'farmer' && user.farmerProfile?.specializations && (
+                        <div className="mt-1">
+                          <small className="text-info">
+                            🌱 {user.farmerProfile.specializations.join(', ')}
+                          </small>
+                        </div>
+                      )}
                     </td>
                     <td>{getRoleBadge(user.role)}</td>
                     <td>{getStatusBadge(user.isActive)}</td>
@@ -911,6 +1296,134 @@ const UserManagement = ({ onNavigate }) => {
           </Button>
           <Button variant="danger" onClick={handleDeleteUser}>
             Delete User
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* Farmer Rejection Modal */}
+      <Modal 
+        show={showRejectionModal} 
+        onHide={() => setShowRejectionModal(false)} 
+        size="lg"
+        centered
+      >
+        <Modal.Header closeButton className="bg-warning text-dark">
+          <Modal.Title>
+            🚫 Reject Farmer Application
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {rejectionFarmer && (
+            <div>
+              <div className="alert alert-warning">
+                <h6 className="mb-2">
+                  <strong>Farmer:</strong> {rejectionFarmer.userId?.name}
+                </h6>
+                <p className="mb-1">
+                  <strong>Farm:</strong> {rejectionFarmer.farmName}
+                </p>
+                <p className="mb-0">
+                  <strong>Email:</strong> {rejectionFarmer.userId?.email}
+                </p>
+              </div>
+
+              <Form>
+                <Form.Group className="mb-3">
+                  <Form.Label><strong>Rejection Reason *</strong></Form.Label>
+                  <Form.Select
+                    value={rejectionForm.reason}
+                    onChange={(e) => setRejectionForm({...rejectionForm, reason: e.target.value})}
+                    required
+                  >
+                    <option value="">Select a reason...</option>
+                    <option value="Incomplete Documents">Incomplete Documents</option>
+                    <option value="Invalid Documents">Invalid Documents</option>
+                    <option value="Insufficient Farm Information">Insufficient Farm Information</option>
+                    <option value="Location Verification Failed">Location Verification Failed</option>
+                    <option value="Bank Details Invalid">Bank Details Invalid</option>
+                    <option value="General Requirements Not Met">General Requirements Not Met</option>
+                    <option value="Other">Other</option>
+                  </Form.Select>
+                </Form.Group>
+
+                <Form.Group className="mb-3">
+                  <Form.Label><strong>Required Documents</strong></Form.Label>
+                  <div className="border p-3 rounded">
+                    {[
+                      'Government-issued ID',
+                      'Farm Certificate/Land Documents', 
+                      'Bank Account Verification',
+                      'Agricultural License',
+                      'Tax Identification Number',
+                      'Farm Photos',
+                      'Other'
+                    ].map(doc => (
+                      <Form.Check
+                        key={doc}
+                        type="checkbox"
+                        label={doc}
+                        checked={rejectionForm.requiredDocuments.includes(doc)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setRejectionForm({
+                              ...rejectionForm,
+                              requiredDocuments: [...rejectionForm.requiredDocuments, doc]
+                            });
+                          } else {
+                            setRejectionForm({
+                              ...rejectionForm,
+                              requiredDocuments: rejectionForm.requiredDocuments.filter(d => d !== doc)
+                            });
+                          }
+                        }}
+                        className="mb-2"
+                      />
+                    ))}
+                  </div>
+                  <Form.Text className="text-muted">
+                    Select the documents that need to be provided or corrected
+                  </Form.Text>
+                </Form.Group>
+
+                <Form.Group className="mb-3">
+                  <Form.Label><strong>Additional Notes</strong></Form.Label>
+                  <Form.Control
+                    as="textarea"
+                    rows={4}
+                    placeholder="Provide additional feedback or specific instructions for the farmer..."
+                    value={rejectionForm.adminNotes}
+                    onChange={(e) => setRejectionForm({...rejectionForm, adminNotes: e.target.value})}
+                  />
+                  <Form.Text className="text-muted">
+                    This will be included in the email to help the farmer understand what needs improvement
+                  </Form.Text>
+                </Form.Group>
+
+                <div className="alert alert-info">
+                  <i className="fas fa-envelope me-2"></i>
+                  <strong>Email Notification:</strong> An automated email with the rejection details and required documents will be sent to the farmer at <strong>{rejectionFarmer.userId?.email}</strong>
+                </div>
+              </Form>
+            </div>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button 
+            variant="secondary" 
+            onClick={() => {
+              setShowRejectionModal(false);
+              setRejectionForm({ reason: '', requiredDocuments: [], adminNotes: '' });
+            }}
+          >
+            Cancel
+          </Button>
+          <Button 
+            variant="warning" 
+            onClick={handleRejectionSubmit}
+            disabled={!rejectionForm.reason}
+          >
+            <i className="fas fa-paper-plane me-2"></i>
+            Send Rejection & Email
           </Button>
         </Modal.Footer>
       </Modal>

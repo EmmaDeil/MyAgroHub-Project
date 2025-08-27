@@ -5,8 +5,8 @@ const getApiBaseUrl = () => {
     return import.meta.env.VITE_API_URL || 'https://your-backend-domain.com/api';
   }
   
-  // Development environment
-  return import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
+  // Development environment - Fixed to use correct port
+  return import.meta.env.VITE_API_URL || 'http://localhost:5002/api';
 };
 
 const API_BASE_URL = getApiBaseUrl();
@@ -568,7 +568,15 @@ export const adminAPI = {
   getFarmers: () => api.get('/admin/farmers'),
 
   // Verify/Unverify farmer
-  verifyFarmer: (id, isVerified) => api.put(`/admin/farmers/${id}/verify`, { isVerified }),
+  verifyFarmer: (id, isVerified, rejectionDetails = null) => {
+    const payload = { isVerified };
+    if (!isVerified && rejectionDetails) {
+      payload.rejectionReason = rejectionDetails.rejectionReason;
+      payload.requiredDocuments = rejectionDetails.requiredDocuments;
+      payload.adminNotes = rejectionDetails.adminNotes;
+    }
+    return api.put(`/admin/farmers/${id}/verify`, payload);
+  },
 
   // Send SMS to farmer
   sendSms: (data) => api.post('/admin/sms/farmer', data)
