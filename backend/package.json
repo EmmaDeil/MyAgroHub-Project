@@ -6,11 +6,10 @@
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
-    "smart": "node server-smart.js",
-    "dev-smart": "nodemon server-smart.js",
-    "temp": "node temp-server.js",
-    "install-mongodb": "install-mongodb.bat",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node test-mongodb.js",
+    "test:health": "node test-health.js",
+    "test:integration": "node test-integration.js",
+    "seed": "node seed.js"
   },
   "keywords": [
     "agrohub",
