@@ -1,5 +1,15 @@
-// API Configuration
-const API_BASE_URL = 'http://localhost:5002/api';
+// API Configuration - Dynamic based on environment
+const getApiBaseUrl = () => {
+  // Production environment
+  if (import.meta.env.PROD) {
+    return import.meta.env.VITE_API_URL || 'https://your-backend-domain.com/api';
+  }
+  
+  // Development environment
+  return import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 // API Client with token management
 class ApiClient {

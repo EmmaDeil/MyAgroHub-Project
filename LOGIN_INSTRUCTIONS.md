@@ -1,23 +1,58 @@
-# AgroHub Login Instructions
+# 🔐 AgroHub - Quick Login Guide
 
-## Backend Status
-The backend server is running on port 5001, with full MongoDB Atlas integration and localStorage fallback for offline functionality.
+## 🚀 Access URLs
+- **Application**: http://localhost:5173/agrohub/
+- **Backend API**: http://localhost:5001
 
-## Available Login Credentials
+## 👤 Demo Accounts
 
-### Admin Accounts (Full Admin Access)
-1. **Primary Admin**
-   - **Email**: eclefzy@gmail.com
-   - **Password**: admin123
+### 🔧 Admin Access (Full Platform Control)
+```
+Email: admin@agrohub.com
+Password: admin123
+```
+*Features: User management, order administration, platform analytics*
 
-2. **System Admin** 
-   - **Email**: admin@agrohub.com
-   - **Password**: password
+### 👥 Customer Access (Shopping & Orders)
+```
+Email: customer@agrohub.com  
+Password: customer123
+```
+*Features: Product browsing, shopping cart, order tracking*
 
-### Customer Accounts
-1. **Demo User**
-   - **Email**: demo@agrohub.com
-   - **Password**: demo123
+### 👨‍🌾 Farmer Access (Product Management)
+```
+Email: farmer@agrohub.com
+Password: farmer123
+```
+*Features: Product listings, inventory management, order fulfillment*
+
+## 🆕 Create New Account
+1. Click **"Sign Up"** on the login page
+2. Fill in your details
+3. Choose your role: Customer or Farmer
+4. Start using the platform immediately
+
+## 🔧 Admin Features
+- **User Management**: View and manage all users
+- **Order Administration**: Track and process all orders  
+- **Product Moderation**: Approve farmer product listings
+- **Platform Analytics**: Sales reports and system insights
+
+## 🛒 Customer Features
+- **Product Catalog**: Browse fresh agricultural products
+- **Shopping Cart**: Add items, modify quantities, checkout
+- **Order Tracking**: Monitor order status and delivery
+- **Profile Management**: Update account information
+
+## 👨‍🌾 Farmer Features
+- **Product Listings**: Add and manage your products
+- **Inventory Control**: Track stock levels and availability
+- **Order Management**: Process customer orders
+- **Sales Analytics**: Monitor your business performance
+
+---
+*🌱 Welcome to AgroHub - Connecting farmers with customers across Africa*
 
 2. **Test User**
    - **Email**: test@test.com
