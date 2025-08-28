@@ -40,8 +40,8 @@ const NavigationHeader = ({ currentPage, setCurrentPage, getTotalItems, getTotal
           }}
           onClick={() => setCurrentPage('landing')}
         >
-          <span className="me-2" style={{ fontSize: '2rem' }}>🌾</span>
-          <span className="d-none d-md-inline">AgroHub Farm Store</span>
+          <span className="me-2" style={{ fontSize: '2rem' }}></span>
+          <span className="d-none d-md-inline">Agro🌾Hub</span>
           <span className="d-md-none">AgroHub</span>
         </Navbar.Brand>
         
