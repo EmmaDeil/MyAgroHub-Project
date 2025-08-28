@@ -89,10 +89,12 @@ function App() {
   };
 
   const getTotalItems = () => {
+    if (!cartItems || cartItems.length === 0) return 0;
     return cartItems.reduce((total, item) => total + (item.quantity || item.orderQuantity || 1), 0);
   };
 
   const getTotalPrice = () => {
+    if (!cartItems || cartItems.length === 0) return 0;
     return cartItems.reduce((total, item) => {
       const quantity = item.quantity || item.orderQuantity || 1;
       const price = item.price || 0;

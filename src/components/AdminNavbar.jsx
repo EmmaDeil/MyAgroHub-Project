@@ -51,8 +51,18 @@ const AdminNavbar = ({ user, onLogout, stats = {}, onNavigate }) => {
               href="#" 
               className="fw-medium text-warning"
               onClick={handleMainSite}
+              title="Go to Main Site"
             >
-              🏠
+              🏠 <span className="d-none d-lg-inline">Home</span>
+            </Nav.Link>
+            
+            <Nav.Link 
+              href="#" 
+              className="fw-medium text-info"
+              onClick={() => handleNavigation('home')}
+              title="Go to Farm Store"
+            >
+              🏪 <span className="d-none d-lg-inline">Store</span>
             </Nav.Link>
             
             <Nav.Link 

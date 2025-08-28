@@ -37,15 +37,6 @@ function ShoppingCart({ cartItems = [], updateQuantity, removeFromCart, setCartI
       });
     }
   }, [user, showCheckoutModal]);
-  
-  // Force recalculation when cart items change
-  const [cartTotal, setCartTotal] = useState(0);
-  const [itemCount, setItemCount] = useState(0);
-  
-  useEffect(() => {
-    setCartTotal(getTotalPrice());
-    setItemCount(getTotalItems());
-  }, [cartItems]);
 
   const handleUpdateQuantity = (productId, newQuantity) => {
     const item = cartItems.find(item => item.id === productId);
@@ -89,14 +80,16 @@ function ShoppingCart({ cartItems = [], updateQuantity, removeFromCart, setCartI
   };
 
   const getTotalPrice = () => {
+    if (!cartItems || cartItems.length === 0) return 0;
     return cartItems.reduce((total, item) => {
       const quantity = item.quantity || 1;
-      const price = item.totalPrice || (item.price * quantity);
+      const price = item.price * quantity; // Always calculate from current price and quantity
       return total + price;
     }, 0);
   };
 
   const getTotalItems = () => {
+    if (!cartItems || cartItems.length === 0) return 0;
     return cartItems.reduce((total, item) => total + (item.quantity || 1), 0);
   };
 
@@ -136,7 +129,7 @@ function ShoppingCart({ cartItems = [], updateQuantity, removeFromCart, setCartI
         },
         paymentMethod,
         specialInstructions,
-        total: cartTotal + 500 // Including delivery fee
+        total: getTotalPrice() + 500 // Including delivery fee
       };
 
       setOrderProgress(50);
@@ -171,7 +164,7 @@ function ShoppingCart({ cartItems = [], updateQuantity, removeFromCart, setCartI
           farmerLocation: cartItems[0]?.location || 'Various Locations',
           quantity: cartItems.reduce((total, item) => total + (item.quantity || 1), 0),
           unit: cartItems[0]?.unit || 'items',
-          unitPrice: itemCount > 0 ? Math.round(cartTotal / itemCount) : 0,
+          unitPrice: getTotalItems() > 0 ? Math.round(getTotalPrice() / getTotalItems()) : 0,
           productDetails: cartItems.map(item => ({
             name: item.name,
             quantity: item.quantity || 1,
@@ -181,7 +174,7 @@ function ShoppingCart({ cartItems = [], updateQuantity, removeFromCart, setCartI
             image: item.image,
             farmer: item.farmer
           })),
-          total: cartTotal + 500,
+          total: getTotalPrice() + 500,
           orderDate: currentDate.toISOString().split('T')[0],
           createdAt: currentDate.toISOString(),
           updatedAt: currentDate.toISOString(),
@@ -297,7 +290,7 @@ function ShoppingCart({ cartItems = [], updateQuantity, removeFromCart, setCartI
     }
   };
 
-  if (cartItems.length === 0) {
+  if (!cartItems || cartItems.length === 0) {
     return (
       <Container>
         <div className="text-center py-5">
@@ -643,14 +636,14 @@ function ShoppingCart({ cartItems = [], updateQuantity, removeFromCart, setCartI
                     Order Summary
                   </h5>
                   <Badge bg="light" text="dark" className="fs-6">
-                    {itemCount} {itemCount === 1 ? 'item' : 'items'}
+                    {getTotalItems()} {getTotalItems() === 1 ? 'item' : 'items'}
                   </Badge>
                 </div>
               </Card.Header>
               <Card.Body>
                 <div className="d-flex justify-content-between mb-3 pb-2 border-bottom">
                   <span>Subtotal:</span>
-                  <span className="fw-bold">₦{cartTotal.toLocaleString()}</span>
+                  <span className="fw-bold">₦{getTotalPrice().toLocaleString()}</span>
                 </div>
                 <div className="d-flex justify-content-between mb-3 pb-2 border-bottom">
                   <span>
@@ -661,7 +654,7 @@ function ShoppingCart({ cartItems = [], updateQuantity, removeFromCart, setCartI
                 </div>
                 <div className="d-flex justify-content-between mb-4">
                   <span className="fw-bold fs-5">Total:</span>
-                  <span className="fw-bold fs-4 text-success">₦{(cartTotal + 500).toLocaleString()}</span>
+                  <span className="fw-bold fs-4 text-success">₦{(getTotalPrice() + 500).toLocaleString()}</span>
                 </div>
                 
                 <div className="d-grid gap-2">
@@ -935,8 +928,8 @@ function ShoppingCart({ cartItems = [], updateQuantity, removeFromCart, setCartI
                       
                       <hr />
                       <div className="d-flex justify-content-between mb-2">
-                        <span>Subtotal ({itemCount} {itemCount === 1 ? 'item' : 'items'}):</span>
-                        <span className="fw-bold">₦{cartTotal.toLocaleString()}</span>
+                        <span>Subtotal ({getTotalItems()} {getTotalItems() === 1 ? 'item' : 'items'}):</span>
+                        <span className="fw-bold">₦{getTotalPrice().toLocaleString()}</span>
                       </div>
                       <div className="d-flex justify-content-between mb-2">
                         <span>Delivery Fee:</span>
@@ -945,7 +938,7 @@ function ShoppingCart({ cartItems = [], updateQuantity, removeFromCart, setCartI
                       <hr />
                       <div className="d-flex justify-content-between mb-3">
                         <span className="fw-bold fs-5">Total:</span>
-                        <span className="fw-bold fs-5 text-success">₦{(cartTotal + 500).toLocaleString()}</span>
+                        <span className="fw-bold fs-5 text-success">₦{(getTotalPrice() + 500).toLocaleString()}</span>
                       </div>
 
                       {paymentMethod === 'Bank Transfer' && (
@@ -982,7 +975,7 @@ function ShoppingCart({ cartItems = [], updateQuantity, removeFromCart, setCartI
               ) : (
                 <>
                   <i className="fas fa-check me-2"></i>
-                  Place Order (₦{(cartTotal + 500).toLocaleString()})
+                  Place Order (₦{(getTotalPrice() + 500).toLocaleString()})
                 </>
               )}
             </Button>

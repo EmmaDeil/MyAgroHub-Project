@@ -102,8 +102,8 @@ const NavigationHeader = ({ currentPage, setCurrentPage, getTotalItems, getTotal
               </>
             )}
             
-            {/* User-specific Navigation Items - Only show cart and orders for regular users */}
-            {user && !isAdmin() && (
+            {/* User-specific Navigation Items - Show cart and orders for all authenticated users */}
+            {user && (
               <>
                 {/* Enhanced Cart with badge */}
                 <Nav.Item>
@@ -144,19 +144,7 @@ const NavigationHeader = ({ currentPage, setCurrentPage, getTotalItems, getTotal
             {/* Admin-specific Navigation Items */}
             {user && isAdmin() && (
               <>
-                {/* Home */}
-                <Nav.Item>
-                  <button 
-                    className={`nav-link btn btn-link text-white border-0 ${currentPage === 'landing' ? 'fw-bold' : ''}`}
-                    onClick={() => setCurrentPage('landing')}
-                    style={currentPage === 'landing' ? activeNavStyle : navLinkStyle}
-                  >
-                    <i className="fas fa-home me-1"></i>
-                    <span className="d-none d-lg-inline">Home</span>
-                  </button>
-                </Nav.Item>
-
-                {/* Products */}
+                {/* Products (Farm Store Home) */}
                 <Nav.Item>
                   <button 
                     className={`nav-link btn btn-link text-white border-0 ${currentPage === 'home' ? 'fw-bold' : ''}`}
