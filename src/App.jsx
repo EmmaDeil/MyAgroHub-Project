@@ -14,6 +14,7 @@ import AdminDashboard from './components/AdminDashboard';
 import AdminProfile from './components/AdminProfile';
 import AdminOrders from './components/AdminOrders';
 import AdminReports from './components/AdminReports';
+import AdminProducts from './components/AdminProducts';
 import UserManagement from './components/UserManagement';
 import UserDashboard from './components/UserDashboard';
 import UserOrdersPage from './components/UserOrdersPage';
@@ -480,6 +481,36 @@ function App() {
         }
         
         return <UserManagement 
+          user={user} 
+          onLogout={handleLogout}
+          onNavigate={setCurrentPage}
+        />;
+
+      case 'admin-products':
+        if (!isAdmin()) {
+          return (
+            <div className="container-fluid px-0 min-vh-100">
+              <div className="row g-0 min-vh-100">
+                <div className="col-12 px-4 py-5 bg-light d-flex align-items-center justify-content-center">
+                  <div className="text-center">
+                    <div style={{ fontSize: '5rem' }} className="mb-4">🚫</div>
+                    <h3 className="text-muted mb-3">Access Denied</h3>
+                    <p className="text-muted mb-4">You don't have admin privileges to access this page</p>
+                    <button 
+                      className="btn btn-success btn-lg"
+                      onClick={() => setCurrentPage('home')}
+                    >
+                      <i className="fas fa-home me-2"></i>
+                      Go Home
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        }
+        
+        return <AdminProducts 
           user={user} 
           onLogout={handleLogout}
           onNavigate={setCurrentPage}
