@@ -347,12 +347,9 @@ const AdminProducts = ({ user, onLogout, onNavigate }) => {
                 </div>
               </Card.Body>
             </Card>
-          </div>
-        </div>
-      </div>
 
-      {/* Add/Edit Product Modal */}
-      <Modal show={showProductModal} onHide={() => setShowProductModal(false)} size="lg">
+            {/* Add/Edit Product Modal */}
+            <Modal show={showProductModal} onHide={() => setShowProductModal(false)} size="lg">
         <Modal.Header closeButton>
           <Modal.Title>
             {editingProduct ? 'Edit Product' : 'Add New Product'}
@@ -501,6 +498,9 @@ const AdminProducts = ({ user, onLogout, onNavigate }) => {
           </Button>
         </Modal.Footer>
       </Modal>
+        </div>
+      </div>
+    </div>
     </div>
   );
 };

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Row, Col, Button, Form, Alert, Table, Badge } from 'react-bootstrap';
+import AdminNavbar from './AdminNavbar';
 import { Line, Bar, Pie, Doughnut } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -112,21 +113,30 @@ const AdminReports = ({ user, onLogout, onNavigate }) => {
   };
 
   return (
-    <div className="container-fluid py-4">
-      {/* Header */}
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <div>
-          <h2 className="text-success mb-1">📈 Reports & Analytics</h2>
-          <p className="text-muted mb-0">Business insights and performance metrics</p>
-        </div>
-        <div>
-          <Button variant="outline-secondary" onClick={() => onNavigate('admin')} className="me-2">
-            ← Back to Dashboard
-          </Button>
-          <Button variant="success" onClick={() => exportReport('Complete')}>
-            <i className="fas fa-download me-1"></i>Export Report
-          </Button>
-        </div>
+    <div>
+      {/* Admin Navigation Bar */}
+      <AdminNavbar 
+        user={user} 
+        onLogout={onLogout}
+        onNavigate={onNavigate}
+      />
+      
+      {/* Main Reports Content */}
+      <div className="container-fluid py-4">
+        {/* Header */}
+        <div className="d-flex justify-content-between align-items-center mb-4">
+          <div>
+            <h2 className="text-success mb-1">📈 Reports & Analytics</h2>
+            <p className="text-muted mb-0">Business insights and performance metrics</p>
+          </div>
+          <div>
+            <Button variant="outline-secondary" onClick={() => onNavigate('admin')} className="me-2">
+              ← Back to Dashboard
+            </Button>
+            <Button variant="success" onClick={() => exportReport('Complete')}>
+              <i className="fas fa-download me-1"></i>Export Report
+            </Button>
+          </div>
       </div>
 
       {alert.show && (
@@ -381,6 +391,7 @@ const AdminReports = ({ user, onLogout, onNavigate }) => {
           </div>
         </Card.Body>
       </Card>
+      </div>
     </div>
   );
 };

@@ -239,11 +239,6 @@ Please prepare for delivery. Thank you!`;
       <div className="container-fluid px-0 min-vh-100">
         <div className="row g-0 min-vh-100">
           <div className="col-12 px-4 py-5 bg-light">
-          {/* Header */}
-          <div className="mb-5">
-            <h1 className="display-4 text-success mb-2">🛠️ Admin Dashboard</h1>
-            <p className="lead text-muted">Comprehensive admin control center for AgroHub platform</p>
-          </div>
 
           {alert.show && (
             <Alert variant={alert.variant} className="mb-4">

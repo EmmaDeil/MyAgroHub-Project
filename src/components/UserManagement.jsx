@@ -4,6 +4,7 @@ import {
   Pagination, InputGroup, FormControl, Dropdown, ButtonGroup, Toast, ToastContainer 
 } from 'react-bootstrap';
 import { adminAPI } from '../services/api';
+import AdminNavbar from './AdminNavbar';
 
 // Custom styles for dropdown overlay
 const dropdownStyles = `
@@ -14,7 +15,7 @@ const dropdownStyles = `
   }
 `;
 
-const UserManagement = ({ onNavigate }) => {
+const UserManagement = ({ user, onNavigate, onLogout }) => {
   // State management
   const [users, setUsers] = useState([]);
   const [farmers, setFarmers] = useState([]);
@@ -688,6 +689,13 @@ const UserManagement = ({ onNavigate }) => {
     <>
       {/* Custom styles for dropdown overlay */}
       <style dangerouslySetInnerHTML={{ __html: dropdownStyles }} />
+      
+      {/* Admin Navigation Bar */}
+      <AdminNavbar 
+        user={user} 
+        onLogout={onLogout}
+        onNavigate={onNavigate}
+      />
       
       <div className="container-fluid px-4 py-5 bg-light min-vh-100" style={{ overflow: 'visible' }}>
         {/* Header */}

@@ -393,7 +393,7 @@ function App() {
         return <AdminProfile 
           user={user} 
           onLogout={handleLogout}
-          onClose={() => setCurrentPage('admin')}
+          onNavigate={setCurrentPage}
         />;
 
       case 'admin-orders':

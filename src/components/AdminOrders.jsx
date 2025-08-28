@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Row, Col, Badge, Button, Modal, Form, Alert, Table, Dropdown, InputGroup } from 'react-bootstrap';
 import { adminAPI } from '../services/api';
+import AdminNavbar from './AdminNavbar';
 
 const AdminOrders = ({ user, onLogout, onNavigate }) => {
   const [orders, setOrders] = useState([]);
@@ -224,17 +225,26 @@ const AdminOrders = ({ user, onLogout, onNavigate }) => {
   const stats = getOrderStats();
 
   return (
-    <div className="container-fluid py-4">
-      {/* Header */}
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <div>
-          <h2 className="text-success mb-1">📦 Order Management</h2>
-          <p className="text-muted mb-0">Manage and track all customer orders</p>
+    <div>
+      {/* Admin Navigation Bar */}
+      <AdminNavbar 
+        user={user} 
+        onLogout={onLogout}
+        onNavigate={onNavigate}
+      />
+      
+      {/* Main Orders Management Content */}
+      <div className="container-fluid py-4">
+        {/* Header */}
+        <div className="d-flex justify-content-between align-items-center mb-4">
+          <div>
+            <h2 className="text-success mb-1">📦 Order Management</h2>
+            <p className="text-muted mb-0">Manage and track all customer orders</p>
+          </div>
+          <Button variant="outline-secondary" onClick={() => onNavigate('admin')}>
+            ← Back to Dashboard
+          </Button>
         </div>
-        <Button variant="outline-secondary" onClick={() => onNavigate('admin')}>
-          ← Back to Dashboard
-        </Button>
-      </div>
 
       {alert.show && (
         <Alert variant={alert.variant} className="mb-4">
@@ -484,6 +494,7 @@ const AdminOrders = ({ user, onLogout, onNavigate }) => {
           )}
         </Modal.Body>
       </Modal>
+      </div>
     </div>
   );
 };
