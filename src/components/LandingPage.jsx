@@ -300,7 +300,7 @@ function LandingPage({ onNavigate }) {
             <Col lg={4} md={6}>
               <div className="mb-4">
                 <h3 className="fw-bold text-success mb-3">
-                  <span style={{ fontSize: '2rem' }}>🌾</span> AgroHub
+                  <span style={{ fontSize: '2rem' }}></span> Agro🌾Hub
                 </h3>
                 <p className="text-light opacity-75 mb-3">
                   Connecting Nigerian farmers directly to customers, ensuring fresh produce, 

@@ -42,7 +42,7 @@ const NavigationHeader = ({ currentPage, setCurrentPage, getTotalItems, getTotal
         >
           <span className="me-2" style={{ fontSize: '2rem' }}></span>
           <span className="d-none d-md-inline">Agro🌾Hub</span>
-          <span className="d-md-none">AgroHub</span>
+          {/* <span className="d-md-none">AgroHub</span> */}
         </Navbar.Brand>
         
         <Navbar.Toggle aria-controls="navbarNav" className="border-0" />
