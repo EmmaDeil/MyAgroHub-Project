@@ -1,7 +1,5 @@
 {
   "name": "agrohub",
-  "homepage": "https://emmadeil.github.io/MyAgroHub-Project/",
-  "repository": "https://github.com/EmmaDeil/MyAgroHub-Project.git",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -13,9 +11,7 @@
     "backend": "cd backend && node server.js",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview",
-    "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist"
+    "preview": "vite preview"
   },
   "dependencies": {
     "bootstrap": "^5.3.7",
