@@ -8,6 +8,7 @@ function ShoppingCart({ cartItems = [], updateQuantity, removeFromCart, setCartI
   const [itemToRemove, setItemToRemove] = useState(null);
   const [isProcessingOrder, setIsProcessingOrder] = useState(false);
   const [orderProgress, setOrderProgress] = useState(0);
+
   const [customerInfo, setCustomerInfo] = useState({
     name: '',
     email: '',
@@ -410,7 +411,7 @@ function ShoppingCart({ cartItems = [], updateQuantity, removeFromCart, setCartI
         <div className="text-end">
           <Badge bg="primary" className="fs-6 px-3 py-2">
             <i className="fas fa-box me-1"></i>
-            {itemCount} {itemCount === 1 ? 'item' : 'items'}
+            {getTotalItems()} {getTotalItems() === 1 ? 'item' : 'items'}
           </Badge>
         </div>
       </div>
@@ -747,7 +748,7 @@ function ShoppingCart({ cartItems = [], updateQuantity, removeFromCart, setCartI
             )}
             
             <Row>
-              <Col lg={7}>
+              <Col lg={7} md={12}>
                 <h5 className="text-success mb-4">
                   <i className="fas fa-user me-2"></i>
                   Customer Information
@@ -899,31 +900,40 @@ function ShoppingCart({ cartItems = [], updateQuantity, removeFromCart, setCartI
                 </Form.Group>
               </Col>
               
-              <Col lg={5}>
+              <Col lg={5} md={12} className="mt-4 mt-lg-0">
                 <div className="sticky-top">
                   <h5 className="text-success mb-3">
                     <i className="fas fa-receipt me-2"></i>
                     Order Summary
                   </h5>
-                  <Card className="shadow-sm">
+                  <Card className="shadow-sm border-success">
                     <Card.Body>
+                      {/* Cart Items Display */}
                       <div className="mb-3" style={{ maxHeight: '300px', overflowY: 'auto' }}>
-                        {cartItems.map((item, index) => (
-                          <div key={index} className="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
-                            <div className="d-flex align-items-center">
-                              <span className="me-2" style={{ fontSize: '1.5rem' }}>{item.image}</span>
-                              <div>
-                                <div className="fw-medium small">{item.name}</div>
-                                <div className="text-muted small">
-                                  {item.quantity || 1} × ₦{item.price.toLocaleString()}/{item.unit}
+                        {cartItems && cartItems.length > 0 ? (
+                          cartItems.map((item, index) => (
+                            <div key={item.id || index} className="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                              <div className="d-flex align-items-center">
+                                <span className="me-2" style={{ fontSize: '1.5rem' }}>{item.image || '🥬'}</span>
+                                <div>
+                                  <div className="fw-medium small">{item.name || 'Product'}</div>
+                                  <div className="text-muted small">
+                                    {item.quantity || 1} × ₦{(item.price || 0).toLocaleString()}/{item.unit || 'unit'}
+                                  </div>
                                 </div>
                               </div>
+                              <div className="text-success fw-bold">
+                                ₦{((item.quantity || 1) * (item.price || 0)).toLocaleString()}
+                              </div>
                             </div>
-                            <div className="text-success fw-bold">
-                              ₦{((item.quantity || 1) * item.price).toLocaleString()}
-                            </div>
+                          ))
+                        ) : (
+                          <div className="text-center py-3 text-muted">
+                            <i className="fas fa-shopping-cart fa-2x mb-2"></i>
+                            <p className="mb-0">No items in cart</p>
+                            <small>Add items to see summary</small>
                           </div>
-                        ))}
+                        )}
                       </div>
                       
                       <hr />
@@ -935,6 +945,12 @@ function ShoppingCart({ cartItems = [], updateQuantity, removeFromCart, setCartI
                         <span>Delivery Fee:</span>
                         <span>₦500</span>
                       </div>
+                      {/* Debug info - remove in production */}
+                      {cartItems && cartItems.length > 0 && (
+                        <div className="small text-success mb-2 p-2 bg-light rounded">
+                          <strong>Cart Debug:</strong> {cartItems.length} items, Total: ₦{getTotalPrice().toLocaleString()}
+                        </div>
+                      )}
                       <hr />
                       <div className="d-flex justify-content-between mb-3">
                         <span className="fw-bold fs-5">Total:</span>

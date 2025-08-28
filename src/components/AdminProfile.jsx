@@ -126,46 +126,6 @@ const AdminProfile = ({ user, onLogout, onNavigate }) => {
               </Alert>
             )}
 
-            {/* System Health Overview */}
-            {/* <Row className="mb-4">
-              <Col md={3}>
-                <Card className="border-0 shadow-sm">
-                  <Card.Body className="text-center">
-                    <div style={{ fontSize: '2rem' }}>👥</div>
-                    <h4 className="text-primary">{stats.totalUsers}</h4>
-                    <small className="text-muted">Total Users</small>
-                  </Card.Body>
-                </Card>
-              </Col>
-              <Col md={3}>
-                <Card className="border-0 shadow-sm">
-                  <Card.Body className="text-center">
-                    <div style={{ fontSize: '2rem' }}>👨‍🌾</div>
-                    <h4 className="text-success">{stats.totalFarmers}</h4>
-                    <small className="text-muted">Active Farmers</small>
-                  </Card.Body>
-                </Card>
-              </Col>
-              <Col md={3}>
-                <Card className="border-0 shadow-sm">
-                  <Card.Body className="text-center">
-                    <div style={{ fontSize: '2rem' }}>⏳</div>
-                    <h4 className="text-warning">{stats.pendingFarmers}</h4>
-                    <small className="text-muted">Pending Approvals</small>
-                  </Card.Body>
-                </Card>
-              </Col>
-              <Col md={3}>
-                <Card className="border-0 shadow-sm">
-                  <Card.Body className="text-center">
-                    <div style={{ fontSize: '2rem' }}>💚</div>
-                    <h4 className="text-info">{stats.systemHealth}%</h4>
-                    <small className="text-muted">System Health</small>
-                  </Card.Body>
-                </Card>
-              </Col>
-            </Row> */}
-
             {/* Navigation Bar Style Tabs */}
             <div className="bg-white border-bottom mb-4 sticky-top">
               <Container fluid>

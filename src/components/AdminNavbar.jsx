@@ -39,8 +39,8 @@ const AdminNavbar = ({ user, onLogout, stats = {}, onNavigate }) => {
           onClick={() => handleNavigation('admin')}
           style={{ cursor: 'pointer' }}
         >
-          <span style={{ fontSize: '1.5rem' }}>🛠️</span>
-          <span className="ms-2 text-success">AgroHub Admin</span>
+          <span style={{ fontSize: '1.5rem' }}></span>
+          <span className="ms-2 text-success">Agro🛠️Hub</span>
         </Navbar.Brand>
 
         <Navbar.Toggle aria-controls="admin-navbar-nav" />

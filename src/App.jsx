@@ -524,7 +524,7 @@ function App() {
   return (
     <div className="App">
       {/* Navigation Header - Show based on user type and current page */}
-      {!(user && isAdmin() && (currentPage === 'admin' || currentPage === 'admin-profile' || currentPage === 'admin-orders' || currentPage === 'admin-reports' || currentPage === 'admin-users')) && 
+      {!(user && isAdmin() && (currentPage === 'admin' || currentPage === 'admin-profile' || currentPage === 'admin-orders' || currentPage === 'admin-reports' || currentPage === 'admin-users' || currentPage === 'admin-products')) && 
        !(user && !isAdmin() && currentPage === 'dashboard') &&
        !(currentPage === 'settings') && (
         <NavigationHeader 

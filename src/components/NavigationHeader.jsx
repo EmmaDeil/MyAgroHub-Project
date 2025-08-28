@@ -179,17 +179,6 @@ const NavigationHeader = ({ currentPage, setCurrentPage, getTotalItems, getTotal
           <div className="d-flex align-items-center">
             {user ? (
               <>
-                {/* Enhanced Cart Summary for logged in users */}
-                {/* <div className="me-3 d-none d-md-block">
-                  <div className="d-flex align-items-center p-2 rounded" style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}>
-                    <i className="fas fa-shopping-cart text-warning me-2"></i>
-                    <div>
-                      <small className="text-white-50 d-block">Cart Total</small>
-                      <span className="text-warning fw-bold">₦{getTotalPrice().toLocaleString()}</span>
-                    </div>
-                  </div>
-                </div> */}
-                
                 {/* Enhanced User Dropdown */}
                 <Dropdown align="end" drop="down" autoClose="outside">
                   <Dropdown.Toggle 
