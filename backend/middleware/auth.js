@@ -1,19 +1,22 @@
-const jwt = require('jsonwebtoken');
-const User = require('../models/User');
+const jwt = require("jsonwebtoken");
+const User = require("../models/User");
 
 // Protect routes - require authentication
 exports.protect = async (req, res, next) => {
   try {
     // 1) Get token from headers
     let token;
-    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
-      token = req.headers.authorization.split(' ')[1];
+    if (
+      req.headers.authorization &&
+      req.headers.authorization.startsWith("Bearer")
+    ) {
+      token = req.headers.authorization.split(" ")[1];
     }
 
     if (!token) {
       return res.status(401).json({
         success: false,
-        message: 'You are not logged in! Please log in to get access.'
+        message: "You are not logged in! Please log in to get access.",
       });
     }
 
@@ -21,11 +24,11 @@ exports.protect = async (req, res, next) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     // 3) Check if user still exists
-    const currentUser = await User.findById(decoded.id).select('+password');
+    const currentUser = await User.findById(decoded.id).select("+password");
     if (!currentUser) {
       return res.status(401).json({
         success: false,
-        message: 'The user belonging to this token does no longer exist.'
+        message: "The user belonging to this token does no longer exist.",
       });
     }
 
@@ -33,7 +36,7 @@ exports.protect = async (req, res, next) => {
     if (!currentUser.isActive) {
       return res.status(401).json({
         success: false,
-        message: 'Your account has been deactivated. Please contact support.'
+        message: "Your account has been deactivated. Please contact support.",
       });
     }
 
@@ -41,10 +44,10 @@ exports.protect = async (req, res, next) => {
     req.user = currentUser;
     next();
   } catch (error) {
-    console.error('Auth Error:', error);
+    console.error("Auth Error:", error);
     return res.status(401).json({
       success: false,
-      message: 'Invalid token. Please log in again.'
+      message: "Invalid token. Please log in again.",
     });
   }
 };
@@ -55,7 +58,7 @@ exports.restrictTo = (...roles) => {
     if (!roles.includes(req.user.role)) {
       return res.status(403).json({
         success: false,
-        message: 'You do not have permission to perform this action'
+        message: "You do not have permission to perform this action",
       });
     }
     next();
@@ -64,10 +67,10 @@ exports.restrictTo = (...roles) => {
 
 // Check if user is admin
 exports.isAdmin = (req, res, next) => {
-  if (req.user.role !== 'admin') {
+  if (req.user.role !== "admin") {
     return res.status(403).json({
       success: false,
-      message: 'Admin access required'
+      message: "Admin access required",
     });
   }
   next();
@@ -77,8 +80,11 @@ exports.isAdmin = (req, res, next) => {
 exports.optionalAuth = async (req, res, next) => {
   try {
     let token;
-    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
-      token = req.headers.authorization.split(' ')[1];
+    if (
+      req.headers.authorization &&
+      req.headers.authorization.startsWith("Bearer")
+    ) {
+      token = req.headers.authorization.split(" ")[1];
     }
 
     if (token) {
@@ -88,10 +94,37 @@ exports.optionalAuth = async (req, res, next) => {
         req.user = currentUser;
       }
     }
-    
+
     next();
-  } catch (error) {
+  } catch {
     // If token is invalid, continue without user
     next();
   }
+};
+
+// Development-only routes - requires admin in production, open in development
+exports.devOnly = async (req, res, next) => {
+  const isProduction = process.env.NODE_ENV === "production";
+
+  if (isProduction) {
+    // In production, require admin authentication
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        message:
+          "Authentication required. This endpoint requires admin access in production.",
+      });
+    }
+
+    if (req.user.role !== "admin") {
+      return res.status(403).json({
+        success: false,
+        message:
+          "Admin access required. Development endpoints are restricted in production.",
+      });
+    }
+  }
+
+  // In development, allow access
+  next();
 };

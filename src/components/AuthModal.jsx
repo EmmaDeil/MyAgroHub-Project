@@ -1,41 +1,60 @@
-import React, { useState } from 'react';
-import { Modal, Form, Button, Alert, Card, InputGroup, Spinner } from 'react-bootstrap';
-import { authAPI, apiUtils } from '../services/api';
+import React, { useState } from "react";
+import {
+  Modal,
+  Form,
+  Button,
+  Alert,
+  Card,
+  InputGroup,
+  Spinner,
+} from "react-bootstrap";
+import { authAPI, apiUtils } from "../services/api";
 
 const AuthModal = ({ show, onHide, onLoginSuccess }) => {
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [loginData, setLoginData] = useState({ email: '', password: '' });
+  const [loginData, setLoginData] = useState({ email: "", password: "" });
   const [signupData, setSignupData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
-    phone: '',
-    role: 'user', // Default to regular user
+    firstName: "",
+    lastName: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    phone: "",
+    role: "user", // Default to regular user
     address: {
-      street: '',
-      city: '',
-      state: '',
-      country: 'Nigeria'
-    }
+      street: "",
+      city: "",
+      state: "",
+      country: "Nigeria",
+    },
   });
-  const [alert, setAlert] = useState({ show: false, message: '', variant: 'danger' });
+  const [alert, setAlert] = useState({
+    show: false,
+    message: "",
+    variant: "danger",
+  });
   const [loading, setLoading] = useState(false);
-  const [passwordStrength, setPasswordStrength] = useState({ score: 0, text: '', color: '' });
+  const [passwordStrength, setPasswordStrength] = useState({
+    score: 0,
+    text: "",
+    color: "",
+  });
 
-  const showAlert = (message, variant = 'danger') => {
+  const showAlert = (message, variant = "danger") => {
     setAlert({ show: true, message, variant });
-    setTimeout(() => setAlert({ show: false, message: '', variant: 'danger' }), 5000);
+    setTimeout(
+      () => setAlert({ show: false, message: "", variant: "danger" }),
+      5000
+    );
   };
 
   // Password strength checker
   const checkPasswordStrength = (password) => {
     let score = 0;
-    let text = '';
-    let color = '';
+    let text = "";
+    let color = "";
 
     if (password.length >= 8) score++;
     if (/[a-z]/.test(password)) score++;
@@ -46,57 +65,48 @@ const AuthModal = ({ show, onHide, onLoginSuccess }) => {
     switch (score) {
       case 0:
       case 1:
-        text = 'Very Weak';
-        color = 'danger';
+        text = "Very Weak";
+        color = "danger";
         break;
       case 2:
-        text = 'Weak';
-        color = 'warning';
+        text = "Weak";
+        color = "warning";
         break;
       case 3:
-        text = 'Medium';
-        color = 'info';
+        text = "Medium";
+        color = "info";
         break;
       case 4:
-        text = 'Strong';
-        color = 'success';
+        text = "Strong";
+        color = "success";
         break;
       case 5:
-        text = 'Very Strong';
-        color = 'success';
+        text = "Very Strong";
+        color = "success";
         break;
       default:
-        text = '';
-        color = '';
+        text = "";
+        color = "";
     }
 
     return { score, text, color };
   };
 
-  // Demo credentials helper
-  const fillDemoCredentials = () => {
-    setLoginData({
-      email: 'demo@agrohub.com',
-      password: 'demo123'
-    });
-    showAlert('Demo credentials filled! Click Login to continue.', 'info');
-  };
-
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
-    
+
     try {
       const response = await authAPI.login(loginData);
       const user = apiUtils.handleAuthResponse(response);
-      
-      showAlert('Login successful! Welcome back.', 'success');
+
+      showAlert("Login successful! Welcome back.", "success");
       setTimeout(() => {
         onLoginSuccess(user);
         onHide();
       }, 500);
     } catch (error) {
-      showAlert(error.message || 'Login failed. Please try again.');
+      showAlert(error.message || "Login failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -108,13 +118,13 @@ const AuthModal = ({ show, onHide, onLoginSuccess }) => {
 
     // Validation
     if (signupData.password !== signupData.confirmPassword) {
-      showAlert('Passwords do not match.');
+      showAlert("Passwords do not match.");
       setLoading(false);
       return;
     }
 
     if (signupData.password.length < 6) {
-      showAlert('Password must be at least 6 characters long.');
+      showAlert("Password must be at least 6 characters long.");
       setLoading(false);
       return;
     }
@@ -125,31 +135,31 @@ const AuthModal = ({ show, onHide, onLoginSuccess }) => {
         email: signupData.email,
         password: signupData.password,
         phone: signupData.phone,
-        role: signupData.role || 'user',
+        role: signupData.role || "user",
         address: signupData.address,
         billing: {
           fullName: `${signupData.firstName} ${signupData.lastName}`,
-          address: signupData.address.street || '',
-          city: signupData.address.city || '',
-          state: signupData.address.state || '',
-          postalCode: '',
-          country: signupData.address.country || 'Nigeria'
+          address: signupData.address.street || "",
+          city: signupData.address.city || "",
+          state: signupData.address.state || "",
+          postalCode: "",
+          country: signupData.address.country || "Nigeria",
         },
         profileImage: null, // Will show generated avatar initially
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
 
       const response = await authAPI.register(userData);
       const user = apiUtils.handleAuthResponse(response);
-      
-      showAlert('Account created successfully! Welcome to AgroHub.', 'success');
+
+      showAlert("Account created successfully! Welcome to AgroHub.", "success");
       setTimeout(() => {
         onLoginSuccess(user);
         onHide();
       }, 1000);
     } catch (error) {
-      showAlert(error.message || 'Registration failed. Please try again.');
+      showAlert(error.message || "Registration failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -161,23 +171,23 @@ const AuthModal = ({ show, onHide, onLoginSuccess }) => {
 
   const handleSignupInputChange = (e) => {
     const { name, value } = e.target;
-    
+
     // Handle nested address fields
-    if (name.startsWith('address.')) {
-      const addressField = name.split('.')[1];
-      setSignupData({ 
-        ...signupData, 
+    if (name.startsWith("address.")) {
+      const addressField = name.split(".")[1];
+      setSignupData({
+        ...signupData,
         address: {
           ...signupData.address,
-          [addressField]: value
-        }
+          [addressField]: value,
+        },
       });
     } else {
       setSignupData({ ...signupData, [name]: value });
     }
-    
+
     // Check password strength for password field
-    if (name === 'password') {
+    if (name === "password") {
       setPasswordStrength(checkPasswordStrength(value));
     }
   };
@@ -185,25 +195,25 @@ const AuthModal = ({ show, onHide, onLoginSuccess }) => {
   // Toggle between login and signup
   const toggleMode = () => {
     setIsLogin(!isLogin);
-    setAlert({ show: false, message: '', variant: 'danger' });
+    setAlert({ show: false, message: "", variant: "danger" });
     // Clear forms when switching
-    setLoginData({ email: '', password: '' });
+    setLoginData({ email: "", password: "" });
     setSignupData({
-      firstName: '',
-      lastName: '',
-      email: '',
-      password: '',
-      confirmPassword: '',
-      phone: '',
-      role: 'user',
+      firstName: "",
+      lastName: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+      phone: "",
+      role: "user",
       address: {
-        street: '',
-        city: '',
-        state: '',
-        country: 'Nigeria'
-      }
+        street: "",
+        city: "",
+        state: "",
+        country: "Nigeria",
+      },
     });
-    setPasswordStrength({ score: 0, text: '', color: '' });
+    setPasswordStrength({ score: 0, text: "", color: "" });
   };
 
   return (
@@ -214,11 +224,12 @@ const AuthModal = ({ show, onHide, onLoginSuccess }) => {
           <div className="col-md-5 bg-success text-white d-flex flex-column justify-content-center p-4">
             <div className="text-center">
               <div className="mb-4">
-                <span style={{ fontSize: '4rem' }}>🌾</span>
+                <span style={{ fontSize: "4rem" }}>🌾</span>
               </div>
               <h3 className="fw-bold mb-3">AgroHub</h3>
               <p className="mb-4 opacity-75">
-                Connecting you to fresh, locally-sourced products from trusted farmers across Nigeria.
+                Connecting you to fresh, locally-sourced products from trusted
+                farmers across Nigeria.
               </p>
               <div className="small">
                 <div className="d-flex align-items-center mb-2">
@@ -241,20 +252,20 @@ const AuthModal = ({ show, onHide, onLoginSuccess }) => {
           <div className="col-md-7 p-4">
             <div className="d-flex justify-content-between align-items-center mb-4">
               <h4 className="mb-0 text-success fw-bold">
-                {isLogin ? 'Welcome Back!' : 'Create Account'}
+                {isLogin ? "Welcome Back!" : "Create Account"}
               </h4>
-              <Button 
-                variant="outline-secondary" 
-                size="sm" 
+              <Button
+                variant="outline-secondary"
+                size="sm"
                 onClick={onHide}
                 className="rounded-circle p-0 d-flex align-items-center justify-content-center"
-                style={{ 
-                  width: '35px', 
-                  height: '35px', 
-                  lineHeight: '1',
-                  fontSize: '16px',
-                  fontWeight: 'normal',
-                  border: '1px solid #dee2e6'
+                style={{
+                  width: "35px",
+                  height: "35px",
+                  lineHeight: "1",
+                  fontSize: "16px",
+                  fontWeight: "normal",
+                  border: "1px solid #dee2e6",
                 }}
                 title="Close"
               >
@@ -263,8 +274,23 @@ const AuthModal = ({ show, onHide, onLoginSuccess }) => {
             </div>
 
             {alert.show && (
-              <Alert variant={alert.variant} className="mb-4" dismissible onClose={() => setAlert({ show: false, message: '', variant: 'danger' })}>
-                <i className={`fas ${alert.variant === 'success' ? 'fa-check-circle' : alert.variant === 'info' ? 'fa-info-circle' : 'fa-exclamation-triangle'} me-2`}></i>
+              <Alert
+                variant={alert.variant}
+                className="mb-4"
+                dismissible
+                onClose={() =>
+                  setAlert({ show: false, message: "", variant: "danger" })
+                }
+              >
+                <i
+                  className={`fas ${
+                    alert.variant === "success"
+                      ? "fa-check-circle"
+                      : alert.variant === "info"
+                      ? "fa-info-circle"
+                      : "fa-exclamation-triangle"
+                  } me-2`}
+                ></i>
                 {alert.message}
               </Alert>
             )}
@@ -285,7 +311,7 @@ const AuthModal = ({ show, onHide, onLoginSuccess }) => {
                     placeholder="Enter your email address"
                     required
                     className="py-2"
-                    style={{ fontSize: '0.95rem' }}
+                    style={{ fontSize: "0.95rem" }}
                   />
                 </Form.Group>
 
@@ -296,36 +322,44 @@ const AuthModal = ({ show, onHide, onLoginSuccess }) => {
                   </Form.Label>
                   <InputGroup>
                     <Form.Control
-                      type={showPassword ? 'text' : 'password'}
+                      type={showPassword ? "text" : "password"}
                       name="password"
                       value={loginData.password}
                       onChange={handleLoginInputChange}
                       placeholder="Enter your password"
                       required
                       className="py-2"
-                      style={{ fontSize: '0.95rem' }}
+                      style={{ fontSize: "0.95rem" }}
                     />
-                    <Button 
+                    <Button
                       variant="outline-secondary"
                       onClick={() => setShowPassword(!showPassword)}
                       className="px-3"
                     >
-                      <i className={`fas ${showPassword ? 'fa-eye-slash' : 'fa-eye'}`}></i>
+                      <i
+                        className={`fas ${
+                          showPassword ? "fa-eye-slash" : "fa-eye"
+                        }`}
+                      ></i>
                     </Button>
                   </InputGroup>
                 </Form.Group>
 
                 <div className="d-grid mb-3">
-                  <Button 
-                    variant="success" 
-                    type="submit" 
-                    size="lg" 
+                  <Button
+                    variant="success"
+                    type="submit"
+                    size="lg"
                     disabled={loading}
                     className="py-2 fw-medium"
                   >
                     {loading ? (
                       <>
-                        <Spinner animation="border" size="sm" className="me-2" />
+                        <Spinner
+                          animation="border"
+                          size="sm"
+                          className="me-2"
+                        />
                         Signing In...
                       </>
                     ) : (
@@ -337,25 +371,13 @@ const AuthModal = ({ show, onHide, onLoginSuccess }) => {
                   </Button>
                 </div>
 
-                <div className="text-center mb-3">
-                  <Button 
-                    variant="outline-info" 
-                    size="sm" 
-                    onClick={fillDemoCredentials}
-                    className="px-3"
-                  >
-                    <i className="fas fa-play me-1"></i>
-                    Try Demo Account
-                  </Button>
-                </div>
-
                 <hr className="my-4" />
-                
+
                 <div className="text-center">
                   <span className="text-muted">Don't have an account? </span>
-                  <Button 
-                    variant="link" 
-                    onClick={toggleMode} 
+                  <Button
+                    variant="link"
+                    onClick={toggleMode}
                     className="p-0 fw-medium text-decoration-none"
                   >
                     Create one here
@@ -378,7 +400,7 @@ const AuthModal = ({ show, onHide, onLoginSuccess }) => {
                         placeholder="First name"
                         required
                         className="py-2"
-                        style={{ fontSize: '0.95rem' }}
+                        style={{ fontSize: "0.95rem" }}
                       />
                     </Form.Group>
                   </div>
@@ -393,7 +415,7 @@ const AuthModal = ({ show, onHide, onLoginSuccess }) => {
                         placeholder="Last name"
                         required
                         className="py-2"
-                        style={{ fontSize: '0.95rem' }}
+                        style={{ fontSize: "0.95rem" }}
                       />
                     </Form.Group>
                   </div>
@@ -412,7 +434,7 @@ const AuthModal = ({ show, onHide, onLoginSuccess }) => {
                     placeholder="Enter your email address"
                     required
                     className="py-2"
-                    style={{ fontSize: '0.95rem' }}
+                    style={{ fontSize: "0.95rem" }}
                   />
                 </Form.Group>
 
@@ -429,15 +451,14 @@ const AuthModal = ({ show, onHide, onLoginSuccess }) => {
                     placeholder="+234 800 000 0000"
                     required
                     className="py-2"
-                    style={{ fontSize: '0.95rem' }}
+                    style={{ fontSize: "0.95rem" }}
                   />
                 </Form.Group>
 
                 {/* Role Selection */}
                 <Form.Group className="mb-3">
                   <Form.Label className="fw-medium">
-                    <i className="fas fa-user-tag me-2 text-success"></i>
-                    I am a
+                    <i className="fas fa-user-tag me-2 text-success"></i>I am a
                   </Form.Label>
                   <Form.Select
                     name="role"
@@ -445,7 +466,7 @@ const AuthModal = ({ show, onHide, onLoginSuccess }) => {
                     onChange={handleSignupInputChange}
                     required
                     className="py-2"
-                    style={{ fontSize: '0.95rem' }}
+                    style={{ fontSize: "0.95rem" }}
                   >
                     <option value="user">Customer (Buy products)</option>
                     <option value="farmer">Farmer (Sell products)</option>
@@ -466,7 +487,7 @@ const AuthModal = ({ show, onHide, onLoginSuccess }) => {
                     placeholder="Street address, building, etc."
                     required
                     className="py-2"
-                    style={{ fontSize: '0.95rem' }}
+                    style={{ fontSize: "0.95rem" }}
                   />
                 </Form.Group>
 
@@ -485,7 +506,7 @@ const AuthModal = ({ show, onHide, onLoginSuccess }) => {
                         placeholder="City"
                         required
                         className="py-2"
-                        style={{ fontSize: '0.95rem' }}
+                        style={{ fontSize: "0.95rem" }}
                       />
                     </Form.Group>
                   </div>
@@ -501,7 +522,7 @@ const AuthModal = ({ show, onHide, onLoginSuccess }) => {
                         onChange={handleSignupInputChange}
                         required
                         className="py-2"
-                        style={{ fontSize: '0.95rem' }}
+                        style={{ fontSize: "0.95rem" }}
                       >
                         <option value="">Select State</option>
                         <option value="Abia">Abia</option>
@@ -553,35 +574,43 @@ const AuthModal = ({ show, onHide, onLoginSuccess }) => {
                   </Form.Label>
                   <InputGroup>
                     <Form.Control
-                      type={showPassword ? 'text' : 'password'}
+                      type={showPassword ? "text" : "password"}
                       name="password"
                       value={signupData.password}
                       onChange={handleSignupInputChange}
                       placeholder="Create a strong password"
                       required
                       className="py-2"
-                      style={{ fontSize: '0.95rem' }}
+                      style={{ fontSize: "0.95rem" }}
                     />
-                    <Button 
+                    <Button
                       variant="outline-secondary"
                       onClick={() => setShowPassword(!showPassword)}
                       className="px-3"
                     >
-                      <i className={`fas ${showPassword ? 'fa-eye-slash' : 'fa-eye'}`}></i>
+                      <i
+                        className={`fas ${
+                          showPassword ? "fa-eye-slash" : "fa-eye"
+                        }`}
+                      ></i>
                     </Button>
                   </InputGroup>
                   {signupData.password && (
                     <div className="mt-2">
                       <div className="d-flex justify-content-between align-items-center">
                         <small className="text-muted">Password Strength:</small>
-                        <small className={`text-${passwordStrength.color} fw-medium`}>
+                        <small
+                          className={`text-${passwordStrength.color} fw-medium`}
+                        >
                           {passwordStrength.text}
                         </small>
                       </div>
-                      <div className="progress" style={{ height: '4px' }}>
-                        <div 
+                      <div className="progress" style={{ height: "4px" }}>
+                        <div
                           className={`progress-bar bg-${passwordStrength.color}`}
-                          style={{ width: `${(passwordStrength.score / 5) * 100}%` }}
+                          style={{
+                            width: `${(passwordStrength.score / 5) * 100}%`,
+                          }}
                         ></div>
                       </div>
                     </div>
@@ -589,45 +618,71 @@ const AuthModal = ({ show, onHide, onLoginSuccess }) => {
                 </Form.Group>
 
                 <Form.Group className="mb-4">
-                  <Form.Label className="fw-medium">Confirm Password</Form.Label>
+                  <Form.Label className="fw-medium">
+                    Confirm Password
+                  </Form.Label>
                   <InputGroup>
                     <Form.Control
-                      type={showConfirmPassword ? 'text' : 'password'}
+                      type={showConfirmPassword ? "text" : "password"}
                       name="confirmPassword"
                       value={signupData.confirmPassword}
                       onChange={handleSignupInputChange}
                       placeholder="Confirm your password"
                       required
                       className="py-2"
-                      style={{ fontSize: '0.95rem' }}
+                      style={{ fontSize: "0.95rem" }}
                     />
-                    <Button 
+                    <Button
                       variant="outline-secondary"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      onClick={() =>
+                        setShowConfirmPassword(!showConfirmPassword)
+                      }
                       className="px-3"
                     >
-                      <i className={`fas ${showConfirmPassword ? 'fa-eye-slash' : 'fa-eye'}`}></i>
+                      <i
+                        className={`fas ${
+                          showConfirmPassword ? "fa-eye-slash" : "fa-eye"
+                        }`}
+                      ></i>
                     </Button>
                   </InputGroup>
                   {signupData.confirmPassword && (
-                    <small className={`text-${signupData.password === signupData.confirmPassword ? 'success' : 'danger'} mt-1 d-block`}>
-                      <i className={`fas ${signupData.password === signupData.confirmPassword ? 'fa-check' : 'fa-times'} me-1`}></i>
-                      {signupData.password === signupData.confirmPassword ? 'Passwords match' : 'Passwords do not match'}
+                    <small
+                      className={`text-${
+                        signupData.password === signupData.confirmPassword
+                          ? "success"
+                          : "danger"
+                      } mt-1 d-block`}
+                    >
+                      <i
+                        className={`fas ${
+                          signupData.password === signupData.confirmPassword
+                            ? "fa-check"
+                            : "fa-times"
+                        } me-1`}
+                      ></i>
+                      {signupData.password === signupData.confirmPassword
+                        ? "Passwords match"
+                        : "Passwords do not match"}
                     </small>
                   )}
                 </Form.Group>
 
                 <div className="d-grid mb-3">
-                  <Button 
-                    variant="success" 
-                    type="submit" 
-                    size="lg" 
+                  <Button
+                    variant="success"
+                    type="submit"
+                    size="lg"
                     disabled={loading}
                     className="py-2 fw-medium"
                   >
                     {loading ? (
                       <>
-                        <Spinner animation="border" size="sm" className="me-2" />
+                        <Spinner
+                          animation="border"
+                          size="sm"
+                          className="me-2"
+                        />
                         Creating Account...
                       </>
                     ) : (
@@ -640,19 +695,23 @@ const AuthModal = ({ show, onHide, onLoginSuccess }) => {
                 </div>
 
                 <div className="small text-muted text-center mb-3">
-                  By creating an account, you agree to our{' '}
-                  <a href="#" className="text-success text-decoration-none">Terms of Service</a>
-                  {' '}and{' '}
-                  <a href="#" className="text-success text-decoration-none">Privacy Policy</a>
+                  By creating an account, you agree to our{" "}
+                  <a href="#" className="text-success text-decoration-none">
+                    Terms of Service
+                  </a>{" "}
+                  and{" "}
+                  <a href="#" className="text-success text-decoration-none">
+                    Privacy Policy
+                  </a>
                 </div>
 
                 <hr className="my-4" />
-                
+
                 <div className="text-center">
                   <span className="text-muted">Already have an account? </span>
-                  <Button 
-                    variant="link" 
-                    onClick={toggleMode} 
+                  <Button
+                    variant="link"
+                    onClick={toggleMode}
                     className="p-0 fw-medium text-decoration-none"
                   >
                     Sign in here

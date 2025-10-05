@@ -22,14 +22,36 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-# Environment files
+
+# Environment files - NEVER commit actual secrets
 .env
 .env.local
-.env.production.local
+.env.*.local
 backend/.env
-backend/.env.production.local
+backend/.env.local
+backend/.env.*.local
 
-# Keep template files for reference
+# Keep template/example files for reference
+!.env.example
 !.env.development
 !.env.production
+!backend/.env.example
 !backend/.env.production
+
+# Production environment files (if they contain secrets)
+# Uncomment these if your .env.production files have real secrets:
+# .env.production
+# backend/.env.production
+
+# Database and sensitive data
+*.sqlite
+*.sqlite3
+*.db
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/settings.json
+.idea/
