@@ -58,10 +58,51 @@ const AdminDashboard = ({ user, onLogout, onNavigate }) => {
   const loadFarmers = async () => {
     try {
       const response = await adminAPI.getFarmers();
-      setFarmers(response.data || []);
+      // Deduplicate farmer entries by linked user id. Sometimes multiple Farmer
+      // documents or placeholders can reference the same User; merge them into
+      // a single entry for the admin UI to avoid repeated users.
+      const raw = response.data || [];
+      const byUser = new Map();
+
+      raw.forEach((f) => {
+        const userId =
+          String(f.user && (f.user._id || f.user)) || f._id || null;
+        if (!userId) return;
+
+        if (!byUser.has(userId)) {
+          // shallow clone
+          byUser.set(userId, { ...f });
+        } else {
+          // merge into existing
+          const existing = byUser.get(userId);
+          // prefer farmName from existing, otherwise take from new
+          existing.farmName = existing.farmName || f.farmName;
+          // merge specializations
+          existing.specializations = Array.from(
+            new Set([
+              ...(existing.specializations || []),
+              ...(f.specializations || []),
+            ])
+          );
+          // isVerified true if any record is verified
+          existing.isVerified = existing.isVerified || f.isVerified;
+          // prefer populated user object if available
+          existing.user =
+            existing.user && existing.user._id
+              ? existing.user
+              : f.user || existing.user;
+          // prefer location fields
+          existing.location = existing.location || f.location;
+          // keep other flags active if any
+          existing.isActive = existing.isActive || f.isActive;
+        }
+      });
+
+      const merged = Array.from(byUser.values());
+      setFarmers(merged);
       console.log(
         "✅ Farmers loaded successfully:",
-        response.data?.length || 0,
+        merged.length || 0,
         "farmers"
       );
     } catch (error) {

@@ -101,9 +101,9 @@ const AdminNavbar = ({ user, onLogout, stats = {}, onNavigate }) => {
             style={{ cursor: "pointer", fontSize: "1.4rem" }}
           >
             <span style={{ fontSize: "1.8rem" }} className="me-2">
-              🌾
+              {/* 🌾 */}
             </span>
-            <span className="d-none d-sm-inline">AgroHub Admin</span>
+            <span className="d-none d-sm-inline">📊 Dashboard</span>
             <span className="d-sm-none">AgroHub</span>
           </Navbar.Brand>
 
@@ -128,7 +128,7 @@ const AdminNavbar = ({ user, onLogout, stats = {}, onNavigate }) => {
                 🏠 Home
               </Nav.Link>
 
-              <Nav.Link
+              {/* <Nav.Link
                 href="#"
                 className="text-white fw-medium px-3"
                 onClick={() => handleNavigation("admin")}
@@ -143,8 +143,8 @@ const AdminNavbar = ({ user, onLogout, stats = {}, onNavigate }) => {
                   (e.target.style.backgroundColor = "transparent")
                 }
               >
-                📊 Dashboard
-              </Nav.Link>
+                
+              </Nav.Link> */}
 
               <Nav.Link
                 href="#"

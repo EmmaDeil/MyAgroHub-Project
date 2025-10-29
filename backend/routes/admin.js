@@ -383,6 +383,41 @@ router.put('/verifications/:id', async (req, res) => {
       }
     }
 
+    // Cascade: Update any existing Farmer documents for this user to mark them verified
+    // and copy verification documents into the farmer profile to keep records in sync.
+    if (status === 'verified') {
+      try {
+        const farmers = await Farmer.find({ user: user._id });
+        if (farmers && farmers.length > 0) {
+          for (const f of farmers) {
+            f.isVerified = true;
+            f.verificationDate = new Date();
+
+            // ensure array exists
+            if (!Array.isArray(f.verificationDocuments)) f.verificationDocuments = [];
+
+            const existingUrls = new Set((f.verificationDocuments || []).map(d => d.url).filter(Boolean));
+
+            const userDocs = (user.verification && Array.isArray(user.verification.documents)) ? user.verification.documents : [];
+            for (const doc of userDocs) {
+              if (!doc || !doc.url) continue;
+              if (existingUrls.has(doc.url)) continue;
+              f.verificationDocuments.push({
+                url: doc.url,
+                documentType: doc.documentType || 'verification',
+                uploadedAt: doc.uploadedAt || new Date()
+              });
+            }
+
+            await f.save();
+          }
+        }
+      } catch (cascadeErr) {
+        console.error('Error cascading verification to Farmer docs:', cascadeErr);
+        // don't fail the main request because of cascade errors
+      }
+    }
+
     // If rejected, send rejection email
     if (status === 'rejected') {
       try {
