@@ -391,10 +391,10 @@ function App() {
       case "reset-password":
         return (
           <ResetPassword
-        token={resetParams?.token}
-        email={resetParams?.email}
-        onNavigate={setCurrentPage}
-        onOpenAuth={() => setShowAuth(true)}
+            token={resetParams?.token}
+            email={resetParams?.email}
+            onNavigate={setCurrentPage}
+            onOpenAuth={() => setShowAuth(true)}
           />
         );
 

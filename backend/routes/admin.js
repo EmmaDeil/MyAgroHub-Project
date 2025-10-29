@@ -610,8 +610,25 @@ router.post("/products", async (req, res) => {
       });
     }
 
-    // Verify farmer exists
-    const farmerDoc = await Farmer.findById(farmer);
+    // Verify farmer exists. If an ID for a User (not Farmer) was provided and the user
+    // has role 'farmer', create a minimal Farmer document linking to that user.
+    let farmerDoc = await Farmer.findById(farmer);
+    if (!farmerDoc) {
+      // try interpreting the provided id as a User id
+      const userDoc = await User.findById(farmer);
+      if (userDoc && userDoc.role === "farmer") {
+        // create a basic Farmer profile for this user
+        farmerDoc = await Farmer.create({
+          user: userDoc._id,
+          farmName: userDoc.name || `${userDoc.email}'s Farm`,
+          location: userDoc.address || { country: userDoc.address?.country || 'Nigeria' },
+          isVerified: false,
+          isActive: true,
+        });
+        console.log(`ℹ️ Created farmer profile for existing user: ${userDoc.email}`);
+      }
+    }
+
     if (!farmerDoc) {
       return res.status(404).json({
         success: false,

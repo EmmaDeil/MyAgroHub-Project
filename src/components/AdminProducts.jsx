@@ -55,6 +55,7 @@ const AdminProducts = ({ user, onLogout, onNavigate }) => {
 
   useEffect(() => {
     loadProducts();
+    // load both Farmer documents and Users with role farmer so admin-created user-only farmers appear
     loadFarmers();
   }, []);
 
@@ -77,8 +78,35 @@ const AdminProducts = ({ user, onLogout, onNavigate }) => {
 
   const loadFarmers = async () => {
     try {
-      const response = await adminAPI.getFarmers();
-      setFarmers(response.data || []);
+      // Fetch farmer profiles and also users with role=farmer
+      const [farmersRes, usersRes] = await Promise.all([
+        adminAPI.getFarmers(),
+        adminAPI.getAllUsers({ role: "farmer", limit: 1000 }),
+      ]);
+
+      const farmerDocs = (farmersRes.data || []).slice();
+
+      // Map existing farmer user ids for quick lookup
+      const farmerUserIds = new Set(farmerDocs.map((f) => String(f.user)));
+
+      // usersRes.data is a list of User objects; include those without Farmer profile
+      const users = usersRes.data || [];
+      users.forEach((u) => {
+        if (!farmerUserIds.has(String(u._id))) {
+          // Create a small placeholder so admin can select this user in the UI.
+          // Note: backend will create a Farmer document automatically when product is saved.
+          farmerDocs.push({
+            _id: u._id, // using user id here; backend accepts user id and will create Farmer if needed
+            user: u._id,
+            farmName: u.name || u.email || "Unnamed Farm",
+            location: u.address || {},
+            isActive: u.isActive !== undefined ? u.isActive : true,
+            _isUserOnly: true,
+          });
+        }
+      });
+
+      setFarmers(farmerDocs);
     } catch (error) {
       console.error("Failed to load farmers:", error);
     }
@@ -442,7 +470,7 @@ const AdminProducts = ({ user, onLogout, onNavigate }) => {
                           <option value="">Select</option>
                           {farmers.map((f) => (
                             <option key={f._id} value={f._id}>
-                              {f.farmName}
+                              {f.farmName} {f._isUserOnly ? "(user)" : ""}
                             </option>
                           ))}
                         </Form.Select>

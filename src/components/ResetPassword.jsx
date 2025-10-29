@@ -2,7 +2,12 @@ import React, { useState, useEffect } from "react";
 import { Form, Button, Alert, InputGroup, Spinner } from "react-bootstrap";
 import { authAPI } from "../services/api";
 
-const ResetPassword = ({ token: propToken, email: propEmail, onNavigate, onOpenAuth }) => {
+const ResetPassword = ({
+  token: propToken,
+  email: propEmail,
+  onNavigate,
+  onOpenAuth,
+}) => {
   const [token, setToken] = useState(propToken || "");
   const [email, setEmail] = useState(propEmail || "");
   const [password, setPassword] = useState("");
