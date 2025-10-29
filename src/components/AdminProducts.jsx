@@ -116,7 +116,45 @@ const AdminProducts = ({ user, onLogout, onNavigate }) => {
         }
       });
 
-      setFarmers(farmerDocs);
+      // Deduplicate by linked user id: some users may have multiple Farmer docs
+      const byUser = {};
+      for (const f of farmerDocs) {
+        const uid = String(f.user?._id || f.user || f._id);
+        if (!byUser[uid]) {
+          // shallow clone to avoid mutating source
+          byUser[uid] = { ...f };
+          // ensure verificationDocuments array exists
+          if (!Array.isArray(byUser[uid].verificationDocuments))
+            byUser[uid].verificationDocuments =
+              byUser[uid].verificationDocuments || [];
+        } else {
+          // merge some useful fields to present a single, accurate entry
+          const existing = byUser[uid];
+          existing.farmName = existing.farmName || f.farmName;
+          existing.isVerified = existing.isVerified || f.isVerified;
+          existing.isActive = existing.isActive && f.isActive;
+          // merge verification documents without duplicates by URL
+          const urls = new Set(
+            (existing.verificationDocuments || [])
+              .map((d) => d.url)
+              .filter(Boolean)
+          );
+          if (Array.isArray(f.verificationDocuments)) {
+            for (const d of f.verificationDocuments) {
+              if (d && d.url && !urls.has(d.url)) {
+                existing.verificationDocuments.push(d);
+                urls.add(d.url);
+              }
+            }
+          }
+          // prefer populated user object if available
+          if (f.user && typeof f.user === "object" && f.user.name)
+            existing.user = f.user;
+        }
+      }
+
+      const merged = Object.values(byUser);
+      setFarmers(merged);
     } catch (error) {
       console.error("Failed to load farmers:", error);
     }

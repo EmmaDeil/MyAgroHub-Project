@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, Form, Button, Row, Col, Alert, Image } from "react-bootstrap";
 import { authAPI } from "../services/api";
 
@@ -267,6 +267,33 @@ const UserSettings = ({ user, onUpdateUser, onNavigate }) => {
       setVerLoading(false);
     }
   };
+
+  // Fetch latest profile from server to keep verification status in sync
+  useEffect(() => {
+    let mounted = true;
+
+    const doLoad = async () => {
+      try {
+        const resp = await authAPI.getMe();
+        const latest = resp?.data?.user || resp?.data || resp?.user || null;
+        if (latest && mounted) {
+          onUpdateUser(latest);
+        }
+      } catch (err) {
+        // ignore - keep existing state
+        console.debug("Failed to refresh profile:", err.message || err);
+      }
+    };
+
+    // Load fresh profile on mount
+    doLoad();
+    // Poll every 30s for status updates (useful after admin approval)
+    const interval = setInterval(doLoad, 30000);
+    return () => {
+      mounted = false;
+      clearInterval(interval);
+    };
+  }, [onUpdateUser]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
