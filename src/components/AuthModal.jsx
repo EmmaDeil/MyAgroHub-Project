@@ -41,6 +41,9 @@ const AuthModal = ({ show, onHide, onLoginSuccess }) => {
     text: "",
     color: "",
   });
+  const [isForgot, setIsForgot] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [forgotLoading, setForgotLoading] = useState(false);
 
   const showAlert = (message, variant = "danger") => {
     setAlert({ show: true, message, variant });
@@ -196,6 +199,7 @@ const AuthModal = ({ show, onHide, onLoginSuccess }) => {
   const toggleMode = () => {
     setIsLogin(!isLogin);
     setAlert({ show: false, message: "", variant: "danger" });
+    setIsForgot(false);
     // Clear forms when switching
     setLoginData({ email: "", password: "" });
     setSignupData({
@@ -214,6 +218,26 @@ const AuthModal = ({ show, onHide, onLoginSuccess }) => {
       },
     });
     setPasswordStrength({ score: 0, text: "", color: "" });
+  };
+
+  const handleForgotSubmit = async (e) => {
+    e.preventDefault();
+    setForgotLoading(true);
+    try {
+      await authAPI.forgotPassword({ email: forgotEmail });
+      showAlert(
+        "If an account with that email exists, a password reset link has been sent.",
+        "success"
+      );
+      setForgotEmail("");
+      // Keep in forgot mode so user sees message; let them go back
+    } catch (error) {
+      showAlert(
+        error.message || "Failed to send reset email. Please try again."
+      );
+    } finally {
+      setForgotLoading(false);
+    }
   };
 
   return (
@@ -296,95 +320,162 @@ const AuthModal = ({ show, onHide, onLoginSuccess }) => {
             )}
 
             {isLogin ? (
-              /* LOGIN FORM */
-              <Form onSubmit={handleLogin}>
-                <Form.Group className="mb-3">
-                  <Form.Label className="fw-medium">
-                    <i className="fas fa-envelope me-2 text-success"></i>
-                    Email Address
-                  </Form.Label>
-                  <Form.Control
-                    type="email"
-                    name="email"
-                    value={loginData.email}
-                    onChange={handleLoginInputChange}
-                    placeholder="Enter your email address"
-                    required
-                    className="py-2"
-                    style={{ fontSize: "0.95rem" }}
-                  />
-                </Form.Group>
-
-                <Form.Group className="mb-4">
-                  <Form.Label className="fw-medium">
-                    <i className="fas fa-lock me-2 text-success"></i>
-                    Password
-                  </Form.Label>
-                  <InputGroup>
+              isForgot ? (
+                /* FORGOT PASSWORD FORM */
+                <Form onSubmit={handleForgotSubmit}>
+                  <Form.Group className="mb-3">
+                    <Form.Label className="fw-medium">
+                      <i className="fas fa-envelope me-2 text-success"></i>
+                      Enter your email to reset password
+                    </Form.Label>
                     <Form.Control
-                      type={showPassword ? "text" : "password"}
-                      name="password"
-                      value={loginData.password}
-                      onChange={handleLoginInputChange}
-                      placeholder="Enter your password"
+                      type="email"
+                      name="forgotEmail"
+                      value={forgotEmail}
+                      onChange={(e) => setForgotEmail(e.target.value)}
+                      placeholder="Enter your email address"
                       required
                       className="py-2"
                       style={{ fontSize: "0.95rem" }}
                     />
+                  </Form.Group>
+
+                  <div className="d-grid mb-3">
                     <Button
-                      variant="outline-secondary"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="px-3"
+                      variant="success"
+                      type="submit"
+                      size="lg"
+                      disabled={forgotLoading}
+                      className="py-2 fw-medium"
                     >
-                      <i
-                        className={`fas ${
-                          showPassword ? "fa-eye-slash" : "fa-eye"
-                        }`}
-                      ></i>
+                      {forgotLoading ? (
+                        <>
+                          <Spinner
+                            animation="border"
+                            size="sm"
+                            className="me-2"
+                          />
+                          Sending...
+                        </>
+                      ) : (
+                        <>Send Reset Link</>
+                      )}
                     </Button>
-                  </InputGroup>
-                </Form.Group>
+                  </div>
 
-                <div className="d-grid mb-3">
-                  <Button
-                    variant="success"
-                    type="submit"
-                    size="lg"
-                    disabled={loading}
-                    className="py-2 fw-medium"
-                  >
-                    {loading ? (
-                      <>
-                        <Spinner
-                          animation="border"
-                          size="sm"
-                          className="me-2"
-                        />
-                        Signing In...
-                      </>
-                    ) : (
-                      <>
-                        <i className="fas fa-sign-in-alt me-2"></i>
-                        Sign In
-                      </>
-                    )}
-                  </Button>
-                </div>
+                  <div className="text-center">
+                    <Button
+                      variant="link"
+                      onClick={() => setIsForgot(false)}
+                      className="p-0"
+                    >
+                      Back to Sign in
+                    </Button>
+                  </div>
+                </Form>
+              ) : (
+                /* LOGIN FORM */
+                <Form onSubmit={handleLogin}>
+                  <Form.Group className="mb-3">
+                    <Form.Label className="fw-medium">
+                      <i className="fas fa-envelope me-2 text-success"></i>
+                      Email Address
+                    </Form.Label>
+                    <Form.Control
+                      type="email"
+                      name="email"
+                      value={loginData.email}
+                      onChange={handleLoginInputChange}
+                      placeholder="Enter your email address"
+                      required
+                      className="py-2"
+                      style={{ fontSize: "0.95rem" }}
+                    />
+                  </Form.Group>
 
-                <hr className="my-4" />
+                  <Form.Group className="mb-4">
+                    <Form.Label className="fw-medium">
+                      <i className="fas fa-lock me-2 text-success"></i>
+                      Password
+                    </Form.Label>
+                    <InputGroup>
+                      <Form.Control
+                        type={showPassword ? "text" : "password"}
+                        name="password"
+                        value={loginData.password}
+                        onChange={handleLoginInputChange}
+                        placeholder="Enter your password"
+                        required
+                        className="py-2"
+                        style={{ fontSize: "0.95rem" }}
+                      />
+                      <Button
+                        variant="outline-secondary"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="px-3"
+                      >
+                        <i
+                          className={`fas ${
+                            showPassword ? "fa-eye-slash" : "fa-eye"
+                          }`}
+                        ></i>
+                      </Button>
+                    </InputGroup>
+                  </Form.Group>
 
-                <div className="text-center">
-                  <span className="text-muted">Don't have an account? </span>
-                  <Button
-                    variant="link"
-                    onClick={toggleMode}
-                    className="p-0 fw-medium text-decoration-none"
-                  >
-                    Create one here
-                    <i className="fas fa-arrow-right ms-1"></i>
-                  </Button>
-                </div>
-              </Form>
+                  <div className="d-grid mb-3">
+                    <Button
+                      variant="success"
+                      type="submit"
+                      size="lg"
+                      disabled={loading}
+                      className="py-2 fw-medium"
+                    >
+                      {loading ? (
+                        <>
+                          <Spinner
+                            animation="border"
+                            size="sm"
+                            className="me-2"
+                          />
+                          Signing In...
+                        </>
+                      ) : (
+                        <>
+                          <i className="fas fa-sign-in-alt me-2"></i>
+                          Sign In
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                  <hr className="my-4" />
+
+                  <div className="d-flex justify-content-between align-items-center mb-2">
+                    <div>
+                      <Button
+                        variant="link"
+                        onClick={() => setIsForgot(true)}
+                        className="p-0 fw-medium text-decoration-none"
+                      >
+                        Forgot password?
+                      </Button>
+                    </div>
+                    <div>
+                      <span className="text-muted">
+                        Don't have an account?{" "}
+                      </span>
+                      <Button
+                        variant="link"
+                        onClick={toggleMode}
+                        className="p-0 fw-medium text-decoration-none"
+                      >
+                        Create one here
+                        <i className="fas fa-arrow-right ms-1"></i>
+                      </Button>
+                    </div>
+                  </div>
+                </Form>
+              )
             ) : (
               /* SIGNUP FORM */
               <Form onSubmit={handleSignup}>

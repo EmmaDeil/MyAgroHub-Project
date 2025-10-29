@@ -58,6 +58,17 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: null
   }
+  ,
+  // Password reset token and expiry
+  passwordResetToken: {
+    type: String,
+    select: false,
+    default: null
+  },
+  passwordResetExpires: {
+    type: Date,
+    default: null
+  }
 }, {
   timestamps: true,
   toJSON: { virtuals: true },

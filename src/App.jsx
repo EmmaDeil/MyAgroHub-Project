@@ -22,12 +22,14 @@ import UserSettings from "./components/UserSettings";
 import UserNotification from "./components/UserNotification";
 import ScrollToTop from "./components/ScrollToTop";
 import { apiUtils } from "./services/api";
+import ResetPassword from "./components/ResetPassword";
 
 function App() {
   const [cartItems, setCartItems] = useState([]);
   const [currentPage, setCurrentPage] = useState("landing"); // Start with landing page
   const [user, setUser] = useState(null);
   const [showAuth, setShowAuth] = useState(false);
+  const [resetParams, setResetParams] = useState(null);
   const [notification, setNotification] = useState({
     show: false,
     message: "",
@@ -44,6 +46,21 @@ function App() {
     } else {
       // Clear any inconsistent state
       apiUtils.clearAuth();
+    }
+    // If app loaded at a reset-password URL, extract token/email and show reset page
+    if (typeof window !== "undefined") {
+      try {
+        const path = window.location.pathname || "";
+        if (path === "/reset-password") {
+          const params = new URLSearchParams(window.location.search);
+          const token = params.get("token");
+          const email = params.get("email");
+          setResetParams({ token, email });
+          setCurrentPage("reset-password");
+        }
+      } catch (e) {
+        console.error("Error parsing reset-password URL:", e);
+      }
     }
   }, []);
 
@@ -370,6 +387,16 @@ function App() {
 
       case "about":
         return <AboutPage />;
+
+      case "reset-password":
+        return (
+          <ResetPassword
+        token={resetParams?.token}
+        email={resetParams?.email}
+        onNavigate={setCurrentPage}
+        onOpenAuth={() => setShowAuth(true)}
+          />
+        );
 
       case "contact":
         return <ContactPage />;

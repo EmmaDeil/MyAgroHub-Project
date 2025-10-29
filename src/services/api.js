@@ -143,6 +143,12 @@ export const authAPI = {
   // Change password
   changePassword: (data) => api.put("/auth/change-password", data),
 
+  // Forgot password - request reset link
+  forgotPassword: (data) => api.post("/auth/forgot-password", data),
+
+  // Reset password using token
+  resetPassword: (data) => api.post("/auth/reset-password", data),
+
   // Logout
   logout: () => {
     api.setToken(null);

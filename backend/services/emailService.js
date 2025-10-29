@@ -434,3 +434,40 @@ module.exports = {
   sendFarmerRejectionEmail,
   createTransporter
 };
+
+// Send password reset email (simple template)
+const sendPasswordResetEmail = async (toEmail, resetUrl, userName = '') => {
+  try {
+    const transporter = createTransporter();
+
+    const mailOptions = {
+      from: process.env.FROM_EMAIL || 'AgroHub <noreply@agrohub.com>',
+      to: toEmail,
+      subject: 'AgroHub - Password Reset Instructions',
+      html: `
+        <p>Hi ${userName || 'there'},</p>
+        <p>We received a request to reset your password for your AgroHub account.</p>
+        <p>Please click the link below to reset your password. The link will expire in one hour.</p>
+        <p><a href="${resetUrl}">Reset your password</a></p>
+        <p>If you didn't request this, you can safely ignore this email.</p>
+        <p>Thanks,<br/>AgroHub Team</p>
+      `,
+      text: `Hi ${userName || ''},\n\nUse the following link to reset your password (expires in 1 hour): ${resetUrl}\n\nIf you didn't request this, ignore this email.\n\nAgroHub Team`
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+    console.log('✅ Password reset email sent:', info.messageId);
+
+    return {
+      success: true,
+      messageId: info.messageId,
+      previewUrl: nodemailer.getTestMessageUrl(info)
+    };
+  } catch (error) {
+    console.error('❌ Failed to send password reset email:', error);
+    throw error;
+  }
+};
+
+// attach to exports
+module.exports.sendPasswordResetEmail = sendPasswordResetEmail;
