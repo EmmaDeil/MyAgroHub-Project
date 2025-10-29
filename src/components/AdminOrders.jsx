@@ -45,7 +45,7 @@ const AdminOrders = ({ user, onLogout, onNavigate }) => {
     unit: "kg",
     available: "",
     organic: false,
-    grade: "A",
+    grade: "Grade A",
     harvestDate: "",
   });
 
@@ -179,7 +179,7 @@ const AdminOrders = ({ user, onLogout, onNavigate }) => {
       unit: "kg",
       available: "",
       organic: false,
-      grade: "A",
+      grade: "Grade A",
       harvestDate: "",
     });
   };
@@ -874,9 +874,9 @@ const AdminOrders = ({ user, onLogout, onNavigate }) => {
                         handleProductFormChange("grade", e.target.value)
                       }
                     >
-                      <option value="A">Grade A (Premium)</option>
-                      <option value="B">Grade B (Good)</option>
-                      <option value="C">Grade C (Standard)</option>
+                      <option value="Grade A">Grade A (Premium)</option>
+                      <option value="Grade B">Grade B (Good)</option>
+                      <option value="Grade C">Grade C (Standard)</option>
                     </Form.Select>
                   </Form.Group>
                 </Col>

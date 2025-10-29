@@ -36,7 +36,7 @@ const AdminProducts = ({ user, onLogout, onNavigate }) => {
     emoji: "&#x1F331;",
     organic: false,
     featured: false,
-    grade: "A",
+    grade: "Grade A",
   });
 
   const categories = [
@@ -51,7 +51,17 @@ const AdminProducts = ({ user, onLogout, onNavigate }) => {
     "Dairy",
     "Other",
   ];
-  const units = ["kg", "g", "pieces", "bunches", "liters", "bags", "crates"];
+  const units = [
+    "kg",
+    "g",
+    "lbs",
+    "piece",
+    "dozen",
+    "bag",
+    "basket",
+    "crate",
+    "ton",
+  ];
 
   useEffect(() => {
     loadProducts();
@@ -133,7 +143,7 @@ const AdminProducts = ({ user, onLogout, onNavigate }) => {
       emoji: "&#x1F331;",
       organic: false,
       featured: false,
-      grade: "A",
+      grade: "Grade A",
     });
     setShowProductModal(true);
   };
@@ -151,7 +161,7 @@ const AdminProducts = ({ user, onLogout, onNavigate }) => {
       emoji: product.emoji || "&#x1F331;",
       organic: product.quality?.organic || false,
       featured: product.isFeatured || false,
-      grade: product.quality?.grade || "A",
+      grade: product.quality?.grade || "Grade A",
     });
     setShowProductModal(true);
   };

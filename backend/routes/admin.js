@@ -316,6 +316,97 @@ router.get("/farmers", async (req, res) => {
   }
 });
 
+// @desc    Get pending user verifications
+// @route   GET /api/admin/verifications
+// @access  Private/Admin
+router.get('/verifications', async (req, res) => {
+  try {
+    const status = req.query.status || 'pending';
+    const query = { 'verification.status': status };
+
+    const users = await User.find(query).select('-password').sort({ 'verification.submittedAt': -1 });
+
+    res.status(200).json({ success: true, count: users.length, data: users });
+  } catch (error) {
+    console.error('Get verifications error:', error);
+    res.status(500).json({ success: false, message: 'Error fetching verifications', error: error.message });
+  }
+});
+
+// @desc    Approve or reject a user's verification
+// @route   PUT /api/admin/verifications/:id
+// @access  Private/Admin
+router.put('/verifications/:id', async (req, res) => {
+  try {
+    const { status, adminNotes, requiredDocuments } = req.body;
+    const valid = ['pending', 'verified', 'rejected', 'unverified'];
+    if (!valid.includes(status)) {
+      return res.status(400).json({ success: false, message: 'Invalid status' });
+    }
+
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+
+    user.verification = user.verification || {};
+    user.verification.status = status;
+    user.verification.adminNotes = adminNotes || user.verification.adminNotes;
+
+    // If rejected, store requiredDocuments as notes (optional)
+    if (status === 'rejected' && requiredDocuments) {
+      user.verification.adminNotes = `${user.verification.adminNotes || ''} \nRequired: ${JSON.stringify(requiredDocuments)}`;
+    }
+
+    await user.save();
+
+    // If verified and user is a farmer, create Farmer profile if missing
+    if (status === 'verified' && user.role === 'farmer') {
+      const existingFarmer = await Farmer.findOne({ user: user._id });
+      if (!existingFarmer) {
+        const farmer = await Farmer.create({
+          user: user._id,
+          farmName: user.name || `${user.email}'s Farm`,
+          location: user.address || { country: user.address?.country || 'Nigeria' },
+          isVerified: true,
+          isActive: true
+        });
+        // Send approval email
+        try {
+          const emailService = require('../services/emailService');
+          await emailService.sendFarmerApprovalEmail(user.email, {
+            farmerName: user.name,
+            farmName: farmer.farmName,
+            approvalDate: new Date().toLocaleDateString()
+          });
+        } catch (emailErr) {
+          console.error('Approval email failed:', emailErr.message);
+        }
+      }
+    }
+
+    // If rejected, send rejection email
+    if (status === 'rejected') {
+      try {
+        const emailService = require('../services/emailService');
+        await emailService.sendFarmerRejectionEmail(user.email, {
+          farmerName: user.name,
+          farmName: user.name || user.email,
+          rejectionReason: adminNotes || 'Not specified',
+          requiredDocuments: requiredDocuments || [],
+          adminNotes: adminNotes || '',
+          rejectionDate: new Date().toLocaleDateString()
+        });
+      } catch (emailErr) {
+        console.error('Rejection email failed:', emailErr.message);
+      }
+    }
+
+    res.status(200).json({ success: true, message: `User verification ${status}`, data: user });
+  } catch (error) {
+    console.error('Verification update error:', error);
+    res.status(500).json({ success: false, message: 'Error updating verification', error: error.message });
+  }
+});
+
 // @desc    Create new farmer
 // @route   POST /api/admin/farmers
 // @access  Private/Admin
@@ -653,7 +744,7 @@ router.post("/products", async (req, res) => {
       emoji: emoji || "🌱",
       quality: {
         organic: organic || false,
-        grade: grade || "A",
+        grade: grade || "Grade A",
       },
     };
 

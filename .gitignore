@@ -30,6 +30,8 @@ dist-ssr
 backend/.env
 backend/.env.local
 backend/.env.*.local
+.github
+.gitignore
 
 # Keep template/example files for reference
 !.env.example

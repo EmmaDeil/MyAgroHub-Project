@@ -12,6 +12,7 @@ import {
 } from "react-bootstrap";
 import { adminAPI } from "../services/api";
 import AdminNavbar from "./AdminNavbar";
+import AdminVerifications from "./AdminVerifications";
 
 const AdminDashboard = ({ user, onLogout, onNavigate }) => {
   const [orders, setOrders] = useState([]);
@@ -28,6 +29,7 @@ const AdminDashboard = ({ user, onLogout, onNavigate }) => {
     username: "",
     sandbox: true,
   });
+  const [showVerificationsModal, setShowVerificationsModal] = useState(false);
   const [showSmsConfig, setShowSmsConfig] = useState(false);
   const [dashboardStats, setDashboardStats] = useState({
     totalOrders: 0,
@@ -300,6 +302,24 @@ Please prepare for delivery. Thank you!`;
         onNavigate={onNavigate}
         stats={dashboardStats}
       />
+
+      <div className="container mt-3">
+        <div className="d-flex justify-content-end mb-3">
+          <Button
+            variant="outline-warning"
+            onClick={() => setShowVerificationsModal(true)}
+          >
+            Pending Verifications{" "}
+            <Badge bg="warning" className="ms-2">
+              {dashboardStats.pendingVerifications || 0}
+            </Badge>
+          </Button>
+        </div>
+        <AdminVerifications
+          show={showVerificationsModal}
+          onHide={() => setShowVerificationsModal(false)}
+        />
+      </div>
 
       {/* Main Dashboard Content */}
       <div className="container-fluid px-0 min-vh-100">

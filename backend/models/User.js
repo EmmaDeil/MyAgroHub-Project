@@ -47,6 +47,31 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: null
   },
+  // Verification status and document for user approval (e.g., farmer onboarding)
+  verification: {
+    status: {
+      type: String,
+      enum: ['unverified', 'pending', 'verified', 'rejected'],
+      default: 'unverified'
+    },
+    // Allow multiple uploaded documents with metadata
+    documents: [
+      {
+        url: { type: String },
+        filename: { type: String },
+        uploadedAt: { type: Date, default: Date.now }
+      }
+    ],
+    // Last submission timestamp (convenience)
+    submittedAt: {
+      type: Date,
+      default: null
+    },
+    adminNotes: {
+      type: String,
+      default: null
+    }
+  },
   preferences: {
     notifications: {
       email: { type: Boolean, default: true },

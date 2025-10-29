@@ -140,6 +140,30 @@ export const authAPI = {
     return data;
   },
 
+  // Upload verification document for approval
+  uploadVerification: async (file) => {
+    const formData = new FormData();
+    formData.append('document', file);
+
+    const url = `${api.baseURL}/users/verify`;
+    const headers = api.getHeaders();
+    delete headers['Content-Type'];
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers,
+      body: formData,
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Failed to upload verification document');
+    }
+
+    return data;
+  },
+
   // Change password
   changePassword: (data) => api.put("/auth/change-password", data),
 
@@ -206,6 +230,15 @@ export const adminAPI = {
     const queryString = new URLSearchParams(params).toString();
     return api.get(`/admin/users${queryString ? `?${queryString}` : ""}`);
   },
+
+  // Get pending verifications
+  getVerifications: (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    return api.get(`/admin/verifications${queryString ? `?${queryString}` : ""}`);
+  },
+
+  // Update a verification (approve/reject)
+  updateVerification: (id, data) => api.put(`/admin/verifications/${id}`, data),
 
   // Get single user by ID
   getUser: (id) => api.get(`/admin/users/${id}`),
