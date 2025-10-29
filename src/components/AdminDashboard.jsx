@@ -303,7 +303,7 @@ Please prepare for delivery. Thank you!`;
         stats={dashboardStats}
       />
 
-      <div className="container mt-3">
+      <div className="container-fluid mt-3">
         <div className="d-flex justify-content-end mb-3">
           <Button
             variant="outline-warning"
