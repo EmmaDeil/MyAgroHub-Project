@@ -9,43 +9,7 @@ import {
   ProgressBar,
 } from "react-bootstrap";
 import NavigationHeader from "./NavigationHeader";
-
-// Sample user orders data - moved outside component to avoid recreation
-const sampleOrders = [
-  {
-    id: "ORD001",
-    productName: "Fresh Tomatoes",
-    quantity: 5,
-    unit: "kg",
-    total: 4000,
-    status: "Delivered",
-    orderDate: "2025-07-20",
-    estimatedDelivery: "2025-07-22",
-    farmerName: "Adebayo Farms",
-  },
-  {
-    id: "ORD002",
-    productName: "White Rice",
-    quantity: 2,
-    unit: "kg",
-    total: 2400,
-    status: "Shipped",
-    orderDate: "2025-07-23",
-    estimatedDelivery: "2025-07-25",
-    farmerName: "Plateau Rice Mills",
-  },
-  {
-    id: "ORD003",
-    productName: "Fresh Pepper",
-    quantity: 1,
-    unit: "kg",
-    total: 2000,
-    status: "Processing",
-    orderDate: "2025-07-24",
-    estimatedDelivery: "2025-07-26",
-    farmerName: "Ogun Spice Gardens",
-  },
-];
+import { ordersAPI } from "../services/api";
 
 const UserDashboard = ({
   user,
@@ -60,20 +24,28 @@ const UserDashboard = ({
   const [recentOrders, setRecentOrders] = useState([]);
 
   useEffect(() => {
-    // Load user orders from localStorage or API
-    const orders = JSON.parse(localStorage.getItem("agrohub_orders") || "[]");
-    const filteredOrders = orders.filter(
-      (order) => order.customerEmail === user?.email
-    );
+    // Load user orders from backend for the logged-in user
+    const loadOrders = async () => {
+      if (!user) {
+        setUserOrders([]);
+        setRecentOrders([]);
+        return;
+      }
 
-    if (filteredOrders.length === 0) {
-      // Use sample data if no real orders
-      setUserOrders(sampleOrders);
-      setRecentOrders(sampleOrders.slice(0, 3));
-    } else {
-      setUserOrders(filteredOrders);
-      setRecentOrders(filteredOrders.slice(0, 3));
-    }
+      try {
+        const response = await ordersAPI.getOrders();
+        const orders = response.data || [];
+        setUserOrders(orders);
+        setRecentOrders(orders.slice(0, 3));
+      } catch (error) {
+        console.error("Failed to load user orders from API:", error);
+        // fallback to empty list (don't use sample data)
+        setUserOrders([]);
+        setRecentOrders([]);
+      }
+    };
+
+    loadOrders();
   }, [user]);
 
   const getStatusBadge = (status) => {
@@ -422,7 +394,11 @@ const UserDashboard = ({
                   </div>
                   <div className="mb-3">
                     <small className="text-muted">Member since:</small>
-                    <div>{new Date().toLocaleDateString()}</div>
+                    <div>
+                      {user?.createdAt
+                        ? new Date(user.createdAt).toLocaleDateString()
+                        : "-"}
+                    </div>
                   </div>
                   <Button
                     variant="outline-primary"
